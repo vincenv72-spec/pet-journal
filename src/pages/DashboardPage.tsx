@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
+import ShareCard from '../components/ShareCard'
 
 export default function DashboardPage() {
   const { session } = useAuth()
@@ -13,6 +14,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [filterPetId, setFilterPetId] = useState<string | null>(null)
   const [filterTag, setFilterTag] = useState<string | null>(null)
+  const [sharingEntry, setSharingEntry] = useState<Entry | null>(null)
 
   useEffect(() => {
     if (!session) return
@@ -188,12 +190,23 @@ export default function DashboardPage() {
               )}
               <div className="flex gap-3 text-sm">
                 <Link to={`/editor/${entry.id}`} className="underline" style={{ color: 'var(--color-forest)' }}>编辑</Link>
+                <button onClick={() => setSharingEntry(entry)} className="underline" style={{ color: 'var(--color-honey)' }}>分享</button>
                 <button onClick={() => handleDelete(entry.id)} style={{ color: 'var(--color-rose)' }}>删除</button>
               </div>
             </motion.div>
           ))}
         </div>
       )}
+
+      <AnimatePresence>
+        {sharingEntry && (
+          <ShareCard
+            entry={sharingEntry}
+            petName={sharingEntry.pet_name}
+            onClose={() => setSharingEntry(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
