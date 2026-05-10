@@ -1,13 +1,13 @@
 import { useEffect } from 'react'
 
-// 森林系水彩调色板：苔绿、嫩芽、蜂蜜、奶油、玫瑰
+// 森林系水彩调色板：苔绿、嫩芽、蜂蜜、奶油、玫瑰（提高 alpha 让一划而过更显眼）
 const dotColors = [
-  'rgba(107, 142, 78, 0.55)',   // 森林苔绿
-  'rgba(138, 171, 110, 0.55)',  // 嫩芽
-  'rgba(217, 165, 91, 0.55)',   // 蜂蜜金
-  'rgba(232, 197, 142, 0.55)',  // 浅蜂蜜
-  'rgba(215, 123, 133, 0.45)',  // 玫瑰
-  'rgba(255, 251, 235, 0.65)',  // 奶油白
+  'rgba(79, 121, 66, 0.95)',    // 森林深绿
+  'rgba(107, 142, 78, 0.90)',   // 苔绿
+  'rgba(138, 171, 110, 0.85)',  // 嫩芽
+  'rgba(217, 165, 91, 0.90)',   // 蜂蜜金
+  'rgba(232, 197, 142, 0.85)',  // 浅蜂蜜
+  'rgba(215, 123, 133, 0.85)',  // 玫瑰
 ]
 
 // 每 7 个粒子穿插一个小元素当点缀
@@ -27,7 +27,7 @@ export default function CursorTrail() {
     let count = 0
 
     function spawnDot(x: number, y: number) {
-      const size = 6 + Math.random() * 10
+      const size = 10 + Math.random() * 14   // 更大：10-24px
       const color = dotColors[Math.floor(Math.random() * dotColors.length)]
 
       const dot = document.createElement('div')
@@ -38,40 +38,40 @@ export default function CursorTrail() {
         width: ${size}px;
         height: ${size}px;
         border-radius: 50%;
-        background: radial-gradient(circle, ${color} 0%, transparent 75%);
+        background: radial-gradient(circle, ${color} 0%, transparent 65%);
         pointer-events: none;
         z-index: 9999;
-        opacity: 0.85;
-        transition: opacity 1.4s ease-out, transform 1.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+        opacity: 1;
+        transition: opacity 0.7s ease-out, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
         will-change: transform, opacity;
       `
       document.body.appendChild(dot)
 
       requestAnimationFrame(() => {
         dot.style.opacity = '0'
-        const dx = (Math.random() - 0.5) * 50
-        const dy = -28 - Math.random() * 32
-        dot.style.transform = `translate(${dx}px, ${dy}px) scale(0.4)`
+        const dx = (Math.random() - 0.5) * 30
+        const dy = -16 - Math.random() * 18
+        dot.style.transform = `translate(${dx}px, ${dy}px) scale(0.5)`
       })
 
-      setTimeout(() => dot.remove(), 1400)
+      setTimeout(() => dot.remove(), 700)
     }
 
     function spawnAccent(x: number, y: number) {
       const el = document.createElement('span')
       el.textContent = accents[Math.floor(Math.random() * accents.length)]
-      const colorIdx = Math.floor(Math.random() * 3) // 只取前 3 种深色
+      const colorIdx = Math.floor(Math.random() * 3)
       el.style.cssText = `
         position: fixed;
         left: ${x - 8}px;
         top: ${y - 8}px;
-        font-size: 12px;
-        color: ${dotColors[colorIdx].replace('0.55', '0.7').replace('0.45', '0.65')};
+        font-size: 16px;
+        color: ${dotColors[colorIdx].replace(/0\.\d+/, '1')};
         pointer-events: none;
         user-select: none;
         z-index: 9999;
-        opacity: 0.85;
-        transition: opacity 1.6s ease-out, transform 1.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+        opacity: 1;
+        transition: opacity 0.9s ease-out, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
         transform: rotate(${(Math.random() - 0.5) * 30}deg);
         will-change: transform, opacity;
       `
@@ -79,21 +79,21 @@ export default function CursorTrail() {
 
       requestAnimationFrame(() => {
         el.style.opacity = '0'
-        const dx = (Math.random() - 0.5) * 60
-        const dy = -36 - Math.random() * 28
-        el.style.transform += ` translate(${dx}px, ${dy}px) scale(0.6)`
+        const dx = (Math.random() - 0.5) * 30
+        const dy = -22 - Math.random() * 18
+        el.style.transform += ` translate(${dx}px, ${dy}px) scale(0.7)`
       })
 
-      setTimeout(() => el.remove(), 1600)
+      setTimeout(() => el.remove(), 900)
     }
 
     function onMove(e: MouseEvent) {
       const now = Date.now()
-      if (now - lastSpawn < 60) return
+      if (now - lastSpawn < 35) return  // 更密：35ms 一个
       lastSpawn = now
       count++
 
-      if (count % 7 === 0) {
+      if (count % 9 === 0) {
         spawnAccent(e.clientX, e.clientY)
       } else {
         spawnDot(e.clientX, e.clientY)

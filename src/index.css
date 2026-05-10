@@ -16,9 +16,9 @@
   --color-tape: #C9D8A5;
 
   /* 玻璃 / 雾面卡片（更透明，让插画呼吸） */
-  --color-glass: rgba(251, 246, 232, 0.42);
-  --color-glass-strong: rgba(251, 246, 232, 0.78);
-  --color-glass-border: rgba(255, 255, 255, 0.55);
+  --color-glass: rgba(251, 246, 232, 0.28);
+  --color-glass-strong: rgba(251, 246, 232, 0.65);
+  --color-glass-border: rgba(255, 255, 255, 0.45);
 
   --font-display: "Ma Shan Zheng", "Caveat", cursive;
   --font-hand: "Patrick Hand", "Caveat", cursive;
@@ -78,18 +78,18 @@
 
   .input {
     width: 100%; padding: 0.875rem 1.125rem; border-radius: 0.875rem;
-    border: 1px solid rgba(122, 106, 92, 0.18);
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(8px);
+    border: 1px solid rgba(122, 106, 92, 0.15);
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(12px);
     outline: none; transition: all .15s;
     font-family: inherit; font-size: 1rem;
     color: var(--color-ink);
   }
-  .input::placeholder { color: rgba(122, 106, 92, 0.55); }
+  .input::placeholder { color: rgba(122, 106, 92, 0.50); }
   .input:focus {
     border-color: var(--color-forest);
-    background: rgba(255, 255, 255, 0.75);
-    box-shadow: 0 0 0 4px rgba(79, 121, 66, 0.18);
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 0 4px rgba(79, 121, 66, 0.15);
   }
 
   /* —— 雾面奶油卡片：透明、有空气感 —— */
