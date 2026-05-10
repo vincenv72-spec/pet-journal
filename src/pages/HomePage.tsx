@@ -20,10 +20,7 @@ export default function HomePage() {
           {session ? (
             <Link to="/dashboard" className="btn-primary !py-2 !px-5 !text-sm">进入手帐本 →</Link>
           ) : (
-            <>
-              <Link to="/login" className="hover:opacity-70 transition-opacity">登录</Link>
-              <Link to="/signup" className="btn-primary !py-2 !px-5 !text-sm">免费注册</Link>
-            </>
+            <Link to="/login" className="btn-primary !py-2 !px-5 !text-sm">登录 / 注册</Link>
           )}
         </div>
       </nav>
@@ -57,7 +54,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }}
             className="flex gap-3 items-center flex-wrap"
           >
-            <Link to={session ? '/dashboard' : '/signup'} className="btn-primary text-base">
+            <Link to={session ? '/dashboard' : '/login'} className="btn-primary text-base">
               {session ? '继续记录 →' : '开始我的手帐 →'}
             </Link>
             <span className="pill">★ 12,438 位铲屎官在用</span>
@@ -96,7 +93,7 @@ export default function HomePage() {
           <p className="text-sm mb-3" style={{ color: 'var(--color-forest)' }}>— 一段温柔的开始 —</p>
           <h2 className="text-4xl md:text-5xl mb-4 leading-tight">开始你和它的<br />第一页</h2>
           <p className="mb-8" style={{ color: 'var(--color-ink-soft)' }}>注册即送 50 张限定贴纸 · 永久免费基础版</p>
-          <Link to={session ? '/dashboard' : '/signup'} className="btn-primary text-base">
+          <Link to={session ? '/dashboard' : '/login'} className="btn-primary text-base">
             {session ? '回到手帐本 →' : '立刻领取 →'}
           </Link>
           <p className="mt-6 tracking-[0.4em] opacity-40 text-sm">🐾 🐾 🐾 🐾 🐾</p>
