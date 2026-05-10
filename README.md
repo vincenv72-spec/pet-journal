@@ -147,10 +147,42 @@ pet-journal-web/
 
 ## 📦 部署
 
-push 到 main 分支后 Cloudflare 自动构建部署：
-- 仓库连接：https://dash.cloudflare.com/
-- Workers & Pages → pet-journal
-- 自定义域名可在该项目设置里绑定
+**main 分支 → 生产环境**：push 到 main 后 Cloudflare 自动构建部署到 `pet-journal.vincenv72.workers.dev`，1-2 分钟生效。
+
+**其他分支 → 预览环境**：Cloudflare 自动给每个非 main 分支生成专属预览 URL（形如 `<branch>-pet-journal.vincenv72.workers.dev` 或 `<commit>-pet-journal.pages.dev`），不影响生产。
+
+### 推荐工作流（避免改坏线上）
+
+```bash
+# 1. 从 main 拉新分支做改动
+git checkout main && git pull
+git checkout -b feature/xxx
+
+# 2. 改代码、commit、push
+git add .
+git commit -m "feat: ..."
+git push -u origin feature/xxx
+# → Cloudflare 自动生成预览 URL，可在 PR 页或 Cloudflare 后台查看
+
+# 3. 在预览 URL 验证 OK 后，合并到 main
+git checkout main
+git merge feature/xxx
+git push   # → 触发生产部署
+
+# 4. 删掉已合并的 feature 分支
+git branch -d feature/xxx
+git push origin --delete feature/xxx
+```
+
+### 紧急回滚
+
+```bash
+# 回滚到任一已发布版本
+git checkout v0.3
+git checkout -b hotfix/rollback-to-v0.3
+git push   # → 看预览，确认是想要的旧版本
+git checkout main && git reset --hard v0.3 && git push --force-with-lease
+```
 
 ---
 
