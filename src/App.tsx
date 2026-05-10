@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage'
 import EditorPage from './pages/EditorPage'
 import PetsPage from './pages/PetsPage'
 import PetDetailPage from './pages/PetDetailPage'
+import YearReviewPage from './pages/YearReviewPage'
 import CursorTrail from './components/CursorTrail'
 
 function Protected({ children }: { children: React.ReactNode }) {
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/editor/:id" element={<Protected><EditorPage /></Protected>} />
           <Route path="/pets" element={<Protected><PetsPage /></Protected>} />
           <Route path="/pets/:id" element={<Protected><PetDetailPage /></Protected>} />
+          <Route path="/pets/:id/year" element={<Protected><YearReviewPage /></Protected>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

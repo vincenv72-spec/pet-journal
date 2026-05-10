@@ -12,6 +12,10 @@ export default function PetsPage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<Pet | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showJoin, setShowJoin] = useState(false)
+  const [joinCode, setJoinCode] = useState('')
+  const [joining, setJoining] = useState(false)
+  const [joinError, setJoinError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!session) return
@@ -72,7 +76,10 @@ export default function PetsPage() {
             {loading ? '...' : `已登记 ${pets.length} 只`}
           </p>
         </div>
-        <button onClick={openNew} className="btn-primary">＋ 添加新成员</button>
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => setShowJoin(true)} className="btn-ghost">用邀请码加入</button>
+          <button onClick={openNew} className="btn-primary">＋ 添加新成员</button>
+        </div>
       </div>
 
       {loading ? (
@@ -95,6 +102,71 @@ export default function PetsPage() {
             onClose={() => setShowForm(false)}
             onSaved={() => { setShowForm(false); loadPets() }}
           />
+        )}
+        {showJoin && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            style={{ background: 'rgba(45, 47, 38, 0.45)', backdropFilter: 'blur(4px)' }}
+            onClick={() => setShowJoin(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+              className="card-paper card-paper-tape w-full max-w-md !p-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl mb-3">用邀请码加入</h2>
+              <p className="text-sm mb-4" style={{ color: 'var(--color-ink-soft)' }}>
+                输入家人发给你的邀请码，一起记录这只毛孩子
+              </p>
+              <input
+                className="input mb-4 text-center text-xl tracking-[0.2em] font-mono"
+                placeholder="ABC-DEF-GHI"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                maxLength={11}
+              />
+              {joinError && <p className="text-sm mb-3" style={{ color: 'var(--color-rose)' }}>{joinError}</p>}
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    if (!joinCode.trim() || !session) return
+                    setJoining(true); setJoinError(null)
+                    try {
+                      const { data: invite } = await supabase
+                        .from('pet_invites')
+                        .select('*')
+                        .eq('code', joinCode.trim())
+                        .is('used_at', null)
+                        .gt('expires_at', new Date().toISOString())
+                        .single()
+                      if (!invite) throw new Error('邀请码无效或已过期')
+                      const { error: addErr } = await supabase.from('pet_members').insert({
+                        pet_id: invite.pet_id,
+                        user_id: session.user.id,
+                        role: 'member',
+                      })
+                      if (addErr && !addErr.message.includes('duplicate')) throw addErr
+                      await supabase.from('pet_invites').update({
+                        used_at: new Date().toISOString(),
+                        used_by: session.user.id,
+                      }).eq('code', joinCode.trim())
+                      setShowJoin(false); setJoinCode(''); loadPets()
+                    } catch (err: any) {
+                      setJoinError(err.message ?? '加入失败')
+                    } finally {
+                      setJoining(false)
+                    }
+                  }}
+                  disabled={joining || !joinCode.trim()}
+                  className="btn-primary flex-1 justify-center"
+                >
+                  {joining ? '加入中...' : '加入'}
+                </button>
+                <button onClick={() => setShowJoin(false)} className="btn-ghost">取消</button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

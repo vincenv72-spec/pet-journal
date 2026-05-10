@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { supabase, type Pet, type Entry, SPECIES_LABEL, SPECIES_EMOJI } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
+import InviteModal from '../components/InviteModal'
 
 type Tab = 'journal' | 'album' | 'mood'
 
@@ -15,6 +16,7 @@ export default function PetDetailPage() {
   const [entries, setEntries] = useState<Entry[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('journal')
+  const [showInvite, setShowInvite] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -84,12 +86,15 @@ export default function PetDetailPage() {
               {pet.birth_date && <span> · 生日 {pet.birth_date} · {ageString(pet.birth_date)}</span>}
             </p>
             {pet.note && <p className="mt-2 handwrite text-lg">"{pet.note}"</p>}
-            <div className="flex gap-4 mt-3 text-sm">
+            <div className="flex gap-3 mt-3 text-sm flex-wrap">
               <span className="pill">📝 {entries.length} 篇手帐</span>
               <span className="pill">📸 {entries.filter((e) => e.photo_url).length} 张照片</span>
               <Link to={`/pets/${pet.id}/year`} className="pill" style={{ color: 'var(--color-forest)' }}>
-                📅 看年度回顾 →
+                📅 年度回顾 →
               </Link>
+              <button onClick={() => setShowInvite(true)} className="pill" style={{ color: 'var(--color-honey)' }}>
+                👨‍👩‍👧 邀请家人
+              </button>
             </div>
           </div>
         </motion.div>
@@ -121,6 +126,10 @@ export default function PetDetailPage() {
           )}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {showInvite && <InviteModal pet={pet} onClose={() => setShowInvite(false)} />}
+      </AnimatePresence>
     </div>
   )
 }
