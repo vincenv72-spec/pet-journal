@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { supabase, type Entry } from '../lib/supabase'
+import { supabase, type Entry, type Pet, SPECIES_EMOJI } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 
@@ -9,6 +9,7 @@ const MOODS = ['🐾', '😺', '🐶', '😴', '🥰', '😋', '🥺', '🤔', '
 
 export default function EditorPage() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const isNew = id === 'new'
   const { session } = useAuth()
   const navigate = useNavigate()
@@ -16,13 +17,22 @@ export default function EditorPage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [mood, setMood] = useState('🐾')
-  const [petName, setPetName] = useState('')
+  const [petId, setPetId] = useState<string | null>(searchParams.get('pet') || null)
   const [entryDate, setEntryDate] = useState(today())
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [pets, setPets] = useState<Pet[]>([])
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(!isNew)
   const [error, setError] = useState<string | null>(null)
+
+  // 加载用户的宠物列表
+  useEffect(() => {
+    if (!session) return
+    supabase.from('pets').select('*').order('created_at').then(({ data }) => {
+      if (data) setPets(data as Pet[])
+    })
+  }, [session])
 
   useEffect(() => {
     if (isNew || !session) return
@@ -34,7 +44,7 @@ export default function EditorPage() {
         setTitle(e.title)
         setContent(e.content)
         setMood(e.mood ?? '🐾')
-        setPetName(e.pet_name ?? '')
+        setPetId(e.pet_id)
         setEntryDate(e.entry_date)
         setPhotoUrl(e.photo_url)
       }
@@ -70,12 +80,14 @@ export default function EditorPage() {
     setSaving(true)
     setError(null)
     try {
+      const selectedPet = pets.find((p) => p.id === petId)
       const payload = {
         user_id: session.user.id,
         title: title.trim(),
         content,
         mood,
-        pet_name: petName.trim() || null,
+        pet_id: petId,
+        pet_name: selectedPet?.name ?? null,  // 冗余存一份名字方便显示
         entry_date: entryDate,
         photo_url: photoUrl,
       }
@@ -136,15 +148,28 @@ export default function EditorPage() {
             />
           </div>
 
-          {/* 日期 + 宠物名 */}
+          {/* 日期 + 宠物选 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block mb-1 text-sm">日期</label>
               <input type="date" className="input" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} />
             </div>
             <div>
-              <label className="block mb-1 text-sm">毛孩子名字（可选）</label>
-              <input className="input" value={petName} onChange={(e) => setPetName(e.target.value)} placeholder="馒头" />
+              <label className="block mb-1 text-sm">毛孩子</label>
+              {pets.length === 0 ? (
+                <Link to="/pets" className="input flex items-center" style={{ color: 'var(--color-forest)' }}>
+                  + 先添加一只毛孩子
+                </Link>
+              ) : (
+                <select className="input" value={petId ?? ''} onChange={(e) => setPetId(e.target.value || null)}>
+                  <option value="">— 不指定 —</option>
+                  {pets.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {SPECIES_EMOJI[p.species]} {p.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 

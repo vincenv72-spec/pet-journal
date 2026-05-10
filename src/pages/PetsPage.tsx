@@ -1,0 +1,325 @@
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { supabase, type Pet, type Species, SPECIES_LABEL, SPECIES_EMOJI } from '../lib/supabase'
+import { useAuth } from '../lib/auth'
+import PhotoBackground from '../components/PhotoBackground'
+
+export default function PetsPage() {
+  const { session } = useAuth()
+  const navigate = useNavigate()
+  const [pets, setPets] = useState<Pet[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState<Pet | null>(null)
+  const [showForm, setShowForm] = useState(false)
+
+  useEffect(() => {
+    if (!session) return
+    loadPets()
+  }, [session])
+
+  async function loadPets() {
+    setLoading(true)
+    const { data } = await supabase
+      .from('pets')
+      .select('*')
+      .order('created_at', { ascending: true })
+    if (data) setPets(data as Pet[])
+    setLoading(false)
+  }
+
+  function openNew() {
+    setEditing(null)
+    setShowForm(true)
+  }
+
+  function openEdit(pet: Pet) {
+    setEditing(pet)
+    setShowForm(true)
+  }
+
+  async function handleDelete(pet: Pet) {
+    if (!confirm(`确认删除 ${pet.name}？所有相关手帐会保留但不再关联宠物。`)) return
+    const { error } = await supabase.from('pets').delete().eq('id', pet.id)
+    if (!error) setPets((p) => p.filter((x) => x.id !== pet.id))
+  }
+
+  async function logout() {
+    await supabase.auth.signOut()
+    navigate('/')
+  }
+
+  return (
+    <div className="min-h-screen px-6 md:px-16 py-8 relative">
+      <PhotoBackground photo="dashboard" intensity={0.65} />
+
+      <header className="flex items-center justify-between mb-10 relative z-10">
+        <Link to="/" className="flex items-center gap-2 text-2xl handwrite font-bold">
+          🌿 宠物手帐
+        </Link>
+        <nav className="flex items-center gap-5 text-sm">
+          <Link to="/dashboard" className="hover:opacity-70">手帐本</Link>
+          <Link to="/pets" className="font-bold" style={{ color: 'var(--color-forest)' }}>毛孩子</Link>
+          <span style={{ color: 'var(--color-ink-soft)' }}>{session?.user.email}</span>
+          <button onClick={logout} className="underline">退出</button>
+        </nav>
+      </header>
+
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4 relative z-10">
+        <div>
+          <h1 className="text-4xl mb-1">我的毛孩子</h1>
+          <p style={{ color: 'var(--color-ink-soft)' }}>
+            {loading ? '...' : `已登记 ${pets.length} 只`}
+          </p>
+        </div>
+        <button onClick={openNew} className="btn-primary">＋ 添加新成员</button>
+      </div>
+
+      {loading ? (
+        <p className="text-center py-20" style={{ color: 'var(--color-ink-soft)' }}>加载中...</p>
+      ) : pets.length === 0 ? (
+        <EmptyState onAdd={openNew} />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+          {pets.map((p, i) => (
+            <PetCard key={p.id} pet={p} index={i} onEdit={() => openEdit(p)} onDelete={() => handleDelete(p)} />
+          ))}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {showForm && (
+          <PetFormModal
+            pet={editing}
+            ownerId={session!.user.id}
+            onClose={() => setShowForm(false)}
+            onSaved={() => { setShowForm(false); loadPets() }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function PetCard({ pet, index, onEdit, onDelete }: { pet: Pet; index: number; onEdit: () => void; onDelete: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.06 }}
+      className="card-paper hover:-translate-y-1 transition-transform"
+      style={{ transform: `rotate(${(index % 3 - 1) * 0.6}deg)` }}
+    >
+      <div className="flex items-center gap-4 mb-4">
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center text-3xl shrink-0"
+          style={{ background: 'rgba(255, 232, 200, 0.6)', border: '1px solid rgba(255,255,255,0.5)' }}
+        >
+          {pet.avatar_url ? (
+            <img src={pet.avatar_url} className="w-full h-full rounded-full object-cover" alt={pet.name} />
+          ) : (
+            <span>{SPECIES_EMOJI[pet.species]}</span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <Link to={`/pets/${pet.id}`} className="block">
+            <h3 className="text-2xl mb-0.5 truncate">{pet.name}</h3>
+            <p className="text-sm truncate" style={{ color: 'var(--color-ink-soft)' }}>
+              {SPECIES_LABEL[pet.species]}
+              {pet.birth_date && <span> · {age(pet.birth_date)}</span>}
+            </p>
+          </Link>
+        </div>
+      </div>
+
+      {pet.note && (
+        <p className="text-sm line-clamp-2 mb-4 handwrite" style={{ color: 'var(--color-ink-soft)' }}>
+          "{pet.note}"
+        </p>
+      )}
+
+      <div className="flex gap-3 text-sm">
+        <Link to={`/pets/${pet.id}`} className="underline" style={{ color: 'var(--color-forest)' }}>查看档案 →</Link>
+        <button onClick={onEdit} className="underline opacity-70">编辑</button>
+        <button onClick={onDelete} className="underline opacity-70" style={{ color: 'var(--color-rose)' }}>删除</button>
+      </div>
+    </motion.div>
+  )
+}
+
+function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; ownerId: string; onClose: () => void; onSaved: () => void }) {
+  const [name, setName] = useState(pet?.name ?? '')
+  const [species, setSpecies] = useState<Species>(pet?.species ?? 'cat')
+  const [birthDate, setBirthDate] = useState(pet?.birth_date ?? '')
+  const [note, setNote] = useState(pet?.note ?? '')
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(pet?.avatar_url ?? null)
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `${ownerId}/avatars/${Date.now()}.${ext}`
+      const { error: upErr } = await supabase.storage.from('photos').upload(path, file)
+      if (upErr) throw upErr
+      const { data } = supabase.storage.from('photos').getPublicUrl(path)
+      setAvatarUrl(data.publicUrl)
+    } catch (err: any) {
+      setError(err.message ?? '上传失败')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleSave() {
+    if (!name.trim()) {
+      setError('给毛孩子起个名字吧')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      const payload = {
+        owner_id: ownerId,
+        name: name.trim(),
+        species,
+        birth_date: birthDate || null,
+        note: note.trim() || null,
+        avatar_url: avatarUrl,
+      }
+      if (pet) {
+        const { error } = await supabase.from('pets').update(payload).eq('id', pet.id)
+        if (error) throw error
+      } else {
+        const { data, error } = await supabase.from('pets').insert(payload).select().single()
+        if (error) throw error
+        // 自动加入 pet_members 作为 owner
+        if (data) {
+          await supabase.from('pet_members').insert({
+            pet_id: data.id,
+            user_id: ownerId,
+            role: 'owner',
+          })
+        }
+      }
+      onSaved()
+    } catch (err: any) {
+      setError(err.message ?? '保存失败')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8"
+      style={{ background: 'rgba(45, 47, 38, 0.45)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
+        className="card-paper card-paper-tape w-full max-w-md !p-8 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-3xl mb-6">{pet ? '编辑档案' : '新成员登记'}</h2>
+
+        <div className="space-y-4">
+          {/* 头像 */}
+          <div className="flex items-center gap-4">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center text-4xl shrink-0 cursor-pointer"
+              style={{ background: 'rgba(255, 232, 200, 0.7)', border: '2px dashed rgba(122,106,92,0.3)' }}
+              onClick={() => document.getElementById('avatar-input')?.click()}
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} className="w-full h-full rounded-full object-cover" alt="" />
+              ) : (
+                <span>{SPECIES_EMOJI[species]}</span>
+              )}
+            </div>
+            <div className="flex-1">
+              <input id="avatar-input" type="file" accept="image/*" onChange={handleAvatar} className="hidden" />
+              <button
+                type="button"
+                onClick={() => document.getElementById('avatar-input')?.click()}
+                className="text-sm underline" style={{ color: 'var(--color-forest)' }}
+              >
+                {avatarUrl ? '换个头像' : '+ 上传头像（可选）'}
+              </button>
+              {uploading && <p className="text-xs mt-1">上传中...</p>}
+            </div>
+          </div>
+
+          {/* 名字 */}
+          <div>
+            <label className="block mb-1 text-sm">名字 *</label>
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="馒头" maxLength={20} />
+          </div>
+
+          {/* 种类 */}
+          <div>
+            <label className="block mb-2 text-sm">种类</label>
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(SPECIES_LABEL) as Species[]).map((s) => (
+                <button
+                  key={s} type="button" onClick={() => setSpecies(s)}
+                  className="px-3 py-2 rounded-xl text-sm transition"
+                  style={{
+                    background: species === s ? 'var(--color-tape)' : 'rgba(255,255,255,0.4)',
+                    border: '1px solid ' + (species === s ? 'var(--color-forest)' : 'rgba(122,106,92,0.18)'),
+                  }}
+                >
+                  {SPECIES_LABEL[s]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 生日 */}
+          <div>
+            <label className="block mb-1 text-sm">生日（可选）</label>
+            <input type="date" className="input" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+          </div>
+
+          {/* 一句话介绍 */}
+          <div>
+            <label className="block mb-1 text-sm">一句话介绍（可选）</label>
+            <input className="input" value={note} onChange={(e) => setNote(e.target.value)} placeholder="爱睡懒觉的小机灵" maxLength={50} />
+          </div>
+
+          {error && <p className="text-sm" style={{ color: 'var(--color-rose)' }}>{error}</p>}
+
+          <div className="flex gap-3 pt-2">
+            <button onClick={handleSave} disabled={saving} className="btn-primary flex-1 justify-center">
+              {saving ? '保存中...' : pet ? '保存修改' : '登记入册'}
+            </button>
+            <button onClick={onClose} className="btn-ghost">取消</button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+function EmptyState({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div className="text-center py-24 relative z-10">
+      <div className="text-7xl mb-4">🐾</div>
+      <h2 className="text-3xl mb-2">还没有毛孩子档案</h2>
+      <p className="mb-6" style={{ color: 'var(--color-ink-soft)' }}>添加第一只，让手帐有归属</p>
+      <button onClick={onAdd} className="btn-primary">+ 登记新成员</button>
+    </div>
+  )
+}
+
+function age(birthDate: string): string {
+  const birth = new Date(birthDate)
+  const now = new Date()
+  const months = (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth())
+  if (months < 12) return `${months} 个月`
+  return `${(months / 12).toFixed(1)} 岁`
+}
