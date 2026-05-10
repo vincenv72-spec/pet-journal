@@ -1,23 +1,15 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../lib/auth'
+import PhotoBackground from '../components/PhotoBackground'
 
 export default function HomePage() {
   const { session } = useAuth()
 
   return (
     <div className="min-h-screen relative">
-      {/* 顶部柔光暖区（晨光照在 hero 上的感觉） */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[720px] -z-10"
-        style={{
-          background:
-            'radial-gradient(700px 420px at 50% -10%, rgba(255, 210, 165, 0.55), transparent 70%),' +
-            'radial-gradient(500px 320px at 20% 10%, rgba(232, 197, 142, 0.40), transparent 70%),' +
-            'radial-gradient(550px 340px at 80% 12%, rgba(220, 235, 195, 0.35), transparent 70%)',
-        }}
-      />
+      {/* 全页氛围底层（手绘森林插画 + 光斑 + 噪点 + 渐隐） */}
+      <PhotoBackground />
 
       {/* 导航 */}
       <nav className="flex items-center justify-between px-6 md:px-14 py-5 relative z-20">
@@ -36,9 +28,9 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero —— 文字 + 主视觉宠物 */}
-      <section className="grid md:grid-cols-2 gap-10 items-center px-6 md:px-20 pt-8 md:pt-14 pb-32 md:pb-40 relative z-10">
-        <div>
+      {/* Hero —— 文字居左，右侧让插画呼吸 */}
+      <section className="px-6 md:px-20 pt-12 md:pt-24 pb-44 md:pb-56 relative z-10">
+        <div className="max-w-xl">
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             className="text-sm md:text-base mb-4"
@@ -49,13 +41,14 @@ export default function HomePage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="text-5xl md:text-7xl leading-[1.15] mb-6"
+            style={{ textShadow: '0 1px 0 rgba(255,255,255,0.6)' }}
           >
             把每一个 <span style={{ background: 'linear-gradient(180deg, transparent 62%, rgba(217, 165, 91, 0.55) 62%)', padding: '0 6px' }}>温柔瞬间</span><br />
             做成手帐<span style={{ color: 'var(--color-forest)' }}>.</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
-            className="text-lg max-w-md mb-8" style={{ color: 'var(--color-ink-soft)' }}
+            className="text-lg max-w-md mb-8" style={{ color: 'var(--color-ink)' }}
           >
             记录吃饭、散步、犯傻和睡相。<br />
             用文字、心情和照片，拼出属于你和它的小日子。
@@ -70,17 +63,10 @@ export default function HomePage() {
             <span className="pill">★ 12,438 位铲屎官在用</span>
           </motion.div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}
-          className="relative h-[380px] md:h-[440px]"
-        >
-          <PetIllustration />
-        </motion.div>
       </section>
 
-      {/* 三个功能 —— 卡片向上叠在 Hero 之下，制造层次 */}
-      <section className="px-6 md:px-20 -mt-24 md:-mt-32 pb-24 relative z-10">
+      {/* 三个功能 —— 卡片向上叠在 Hero 之下 */}
+      <section className="px-6 md:px-20 -mt-32 md:-mt-40 pb-24 relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl mb-3">三件事，慢慢做就好</h2>
           <p className="text-base" style={{ color: 'var(--color-ink-soft)' }}>不需要会画画，也能拥有最可爱的手帐本</p>
@@ -117,7 +103,7 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      <footer className="text-center py-8 text-sm" style={{ color: 'var(--color-ink-soft)' }}>
+      <footer className="text-center py-8 text-sm relative z-10" style={{ color: 'var(--color-ink-soft)' }}>
         © 2026 宠物手帐 · made with <span style={{ color: 'var(--color-rose)' }}>♡</span> for every furry friend
       </footer>
     </div>
@@ -138,69 +124,6 @@ function PawLogo() {
       <circle cx="6" cy="18" r="2.5" fill="var(--color-forest)" />
       <circle cx="26" cy="18" r="2.5" fill="var(--color-forest)" />
       <ellipse cx="16" cy="22" rx="7" ry="6" fill="var(--color-forest)" />
-    </svg>
-  )
-}
-
-function PetIllustration() {
-  return (
-    <svg viewBox="0 0 400 400" className="w-full h-full" aria-hidden="true">
-      <ellipse cx="200" cy="360" rx="150" ry="16" fill="#4F7942" opacity="0.12" />
-      {/* 灌木 */}
-      <g opacity="0.55">
-        <ellipse cx="60" cy="340" rx="40" ry="20" fill="#8AAB6E" />
-        <ellipse cx="340" cy="340" rx="50" ry="22" fill="#8AAB6E" />
-      </g>
-      {/* 蘑菇 */}
-      <g transform="translate(50,300)">
-        <ellipse cx="0" cy="0" rx="14" ry="9" fill="#D77B85" />
-        <rect x="-4" y="-2" width="8" height="14" rx="2" fill="#FBF8EC" />
-      </g>
-      <g transform="translate(355,310)">
-        <ellipse cx="0" cy="0" rx="11" ry="7" fill="#D9A55B" />
-        <rect x="-3" y="-1" width="6" height="11" rx="2" fill="#FBF8EC" />
-      </g>
-      {/* 狗 */}
-      <g style={{ transformOrigin: '140px 260px', animation: 'wiggleL 3s ease-in-out infinite' }}>
-        <ellipse cx="140" cy="310" rx="48" ry="32" fill="#E8C9A0" />
-        <ellipse cx="115" cy="335" rx="14" ry="12" fill="#D4AB7E" />
-        <ellipse cx="165" cy="335" rx="14" ry="12" fill="#D4AB7E" />
-        <path d="M180 305 Q200 290 198 270" stroke="#D4AB7E" strokeWidth="14" fill="none" strokeLinecap="round" />
-        <circle cx="140" cy="240" r="68" fill="#F0D5A8" />
-        <ellipse cx="80" cy="225" rx="22" ry="38" fill="#B8915F" transform="rotate(-15 80 225)" />
-        <ellipse cx="200" cy="225" rx="22" ry="38" fill="#B8915F" transform="rotate(15 200 225)" />
-        <ellipse cx="118" cy="240" rx="11" ry="13" fill="#2D3A2E" />
-        <ellipse cx="162" cy="240" rx="11" ry="13" fill="#2D3A2E" />
-        <circle cx="121" cy="235" r="4" fill="#fff" />
-        <circle cx="165" cy="235" r="4" fill="#fff" />
-        <ellipse cx="140" cy="265" rx="8" ry="6" fill="#2D3A2E" />
-        <path d="M140 271 L140 280 M132 286 Q140 292 148 286" stroke="#2D3A2E" strokeWidth="3" fill="none" strokeLinecap="round" />
-        <ellipse cx="100" cy="265" rx="12" ry="7" fill="#E8919C" opacity="0.55" />
-        <ellipse cx="180" cy="265" rx="12" ry="7" fill="#E8919C" opacity="0.55" />
-      </g>
-      {/* 猫 */}
-      <g style={{ transformOrigin: '290px 290px', animation: 'wiggleR 4s ease-in-out infinite' }}>
-        <ellipse cx="290" cy="320" rx="42" ry="28" fill="#FFE8C8" />
-        <path d="M328 318 Q360 310 358 280 Q352 268 345 275" stroke="#F5D5A8" strokeWidth="14" fill="none" strokeLinecap="round" />
-        <circle cx="290" cy="255" r="60" fill="#FFE8C8" />
-        <path d="M242 240 L248 195 L268 232 Z" fill="#FFE8C8" />
-        <path d="M338 240 L332 195 L312 232 Z" fill="#FFE8C8" />
-        <path d="M250 230 L252 210 L262 228 Z" fill="#D77B85" opacity="0.65" />
-        <path d="M330 230 L328 210 L318 228 Z" fill="#D77B85" opacity="0.65" />
-        <ellipse cx="270" cy="255" rx="10" ry="13" fill="#2D3A2E" />
-        <ellipse cx="310" cy="255" rx="10" ry="13" fill="#2D3A2E" />
-        <circle cx="273" cy="250" r="4" fill="#fff" />
-        <circle cx="313" cy="250" r="4" fill="#fff" />
-        <path d="M286 274 L294 274 L290 280 Z" fill="#D77B85" />
-        <path d="M290 280 L290 286 M283 290 Q287 293 290 290 Q293 293 297 290" stroke="#2D3A2E" strokeWidth="2.2" fill="none" strokeLinecap="round" />
-        <ellipse cx="255" cy="278" rx="11" ry="6" fill="#E8919C" opacity="0.55" />
-        <ellipse cx="325" cy="278" rx="11" ry="6" fill="#E8919C" opacity="0.55" />
-      </g>
-      <text x="200" y="170" fontFamily="Caveat" fontSize="36" fill="#D77B85" textAnchor="middle">♡</text>
-      <style>{`
-        @keyframes wiggleL { 0%,100%{transform:rotate(0)} 50%{transform:rotate(-3deg)} }
-        @keyframes wiggleR { 0%,100%{transform:rotate(0)} 50%{transform:rotate(3deg)} }
-      `}</style>
     </svg>
   )
 }
