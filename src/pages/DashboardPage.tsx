@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { supabase, type Entry } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
+import PhotoBackground from '../components/PhotoBackground'
 
 export default function DashboardPage() {
   const { session } = useAuth()
@@ -33,9 +34,13 @@ export default function DashboardPage() {
     navigate('/')
   }
 
+  // 没有手帐时用 empty.jpg（探头小狗），有手帐用 dashboard.jpg
+  const bgPhoto = !loading && entries.length === 0 ? 'empty' : 'dashboard'
+
   return (
-    <div className="min-h-screen px-6 md:px-16 py-8">
-      <header className="flex items-center justify-between mb-10">
+    <div className="min-h-screen px-6 md:px-16 py-8 relative">
+      <PhotoBackground photo={bgPhoto} intensity={0.75} />
+      <header className="flex items-center justify-between mb-10 relative z-10">
         <Link to="/" className="flex items-center gap-2 text-2xl handwrite font-bold">
           🌿 宠物手帐
         </Link>
@@ -45,7 +50,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-4 relative z-10">
         <div>
           <h1 className="text-4xl mb-1">我的手帐本</h1>
           <p style={{ color: 'var(--color-ink-soft)' }}>
@@ -60,7 +65,7 @@ export default function DashboardPage() {
       ) : entries.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
           {entries.map((entry, i) => (
             <motion.div
               key={entry.id}

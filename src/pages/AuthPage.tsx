@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
+import PhotoBackground from '../components/PhotoBackground'
 
 export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   const isLogin = mode === 'login'
@@ -39,10 +40,11 @@ export default function AuthPage({ mode }: { mode: 'login' | 'signup' }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative">
+      <PhotoBackground photo="login" intensity={0.85} />
       <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="card-paper card-paper-tape w-full max-w-md !p-10"
+        className="card-paper card-paper-tape w-full max-w-md !p-10 relative z-10"
       >
         <Link to="/" className="text-sm" style={{ color: 'var(--color-ink-soft)' }}>← 回首页</Link>
         <h1 className="text-4xl mt-3 mb-2">{isLogin ? '欢迎回来 🌿' : '注册账号 ✨'}</h1>

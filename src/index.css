@@ -15,10 +15,10 @@
   --color-paper: #FBF8EC;
   --color-tape: #C9D8A5;
 
-  /* 玻璃 / 雾面卡片 */
-  --color-glass: rgba(251, 246, 232, 0.62);
-  --color-glass-strong: rgba(251, 246, 232, 0.85);
-  --color-glass-border: rgba(255, 255, 255, 0.6);
+  /* 玻璃 / 雾面卡片（更透明，让插画呼吸） */
+  --color-glass: rgba(251, 246, 232, 0.42);
+  --color-glass-strong: rgba(251, 246, 232, 0.78);
+  --color-glass-border: rgba(255, 255, 255, 0.55);
 
   --font-display: "Ma Shan Zheng", "Caveat", cursive;
   --font-hand: "Patrick Hand", "Caveat", cursive;
@@ -96,13 +96,13 @@
   .card-paper {
     border-radius: 1.5rem; padding: 1.75rem; position: relative;
     background: var(--color-glass);
-    backdrop-filter: blur(20px) saturate(108%);
-    -webkit-backdrop-filter: blur(20px) saturate(108%);
+    backdrop-filter: blur(28px) saturate(115%);
+    -webkit-backdrop-filter: blur(28px) saturate(115%);
     border: 1px solid var(--color-glass-border);
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.7) inset,
-      0 8px 24px -10px rgba(120, 90, 60, 0.10),
-      0 30px 60px -25px rgba(120, 90, 60, 0.18);
+      0 1px 0 rgba(255,255,255,0.6) inset,
+      0 8px 24px -10px rgba(120, 90, 60, 0.08),
+      0 30px 60px -25px rgba(120, 90, 60, 0.14);
   }
   /* 老的胶带样式保留但更柔 */
   .card-paper-tape::before {

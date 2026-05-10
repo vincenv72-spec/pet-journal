@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { supabase, type Entry } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
+import PhotoBackground from '../components/PhotoBackground'
 
 const MOODS = ['🐾', '😺', '🐶', '😴', '🥰', '😋', '🥺', '🤔', '🎉', '💖']
 
@@ -96,7 +97,9 @@ export default function EditorPage() {
   if (loading) return <p className="text-center py-20">加载中...</p>
 
   return (
-    <div className="min-h-screen px-6 md:px-16 py-8 max-w-3xl mx-auto">
+    <div className="min-h-screen px-6 md:px-16 py-8 relative">
+      <PhotoBackground photo="editor" intensity={0.7} />
+      <div className="max-w-3xl mx-auto relative z-10">
       <Link to="/dashboard" className="text-sm" style={{ color: 'var(--color-ink-soft)' }}>← 回到手帐本</Link>
 
       <motion.div
@@ -182,6 +185,7 @@ export default function EditorPage() {
           </div>
         </div>
       </motion.div>
+      </div>
     </div>
   )
 }
