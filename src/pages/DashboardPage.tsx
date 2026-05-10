@@ -5,6 +5,7 @@ import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS } from '../l
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 import ShareCard from '../components/ShareCard'
+import ThemePicker from '../components/ThemePicker'
 
 export default function DashboardPage() {
   const { session } = useAuth()
@@ -65,11 +66,12 @@ export default function DashboardPage() {
     <div className="min-h-screen px-6 md:px-16 py-8 relative">
       <PhotoBackground photo={bgPhoto} intensity={0.75} />
 
-      <header className="flex items-center justify-between mb-10 relative z-10">
+      <header className="flex items-center justify-between mb-10 relative z-10 flex-wrap gap-3">
         <Link to="/" className="flex items-center gap-2 text-2xl handwrite font-bold">
           🌿 宠物手帐
         </Link>
-        <nav className="flex items-center gap-5 text-sm">
+        <nav className="flex items-center gap-3 md:gap-5 text-sm">
+          <ThemePicker />
           <Link to="/dashboard" className="hidden md:inline font-bold" style={{ color: 'var(--color-forest)' }}>手帐本</Link>
           <Link to="/pets" className="hidden md:inline hover:opacity-70">毛孩子</Link>
           <span className="hidden sm:inline text-xs md:text-sm" style={{ color: 'var(--color-ink-soft)' }}>{session?.user.email}</span>

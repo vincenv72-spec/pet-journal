@@ -1,34 +1,24 @@
-import { useEffect } from 'react'
-
-// 森林系水彩调色板：苔绿、嫩芽、蜂蜜、奶油、玫瑰（提高 alpha 让一划而过更显眼）
-const dotColors = [
-  'rgba(79, 121, 66, 0.95)',    // 森林深绿
-  'rgba(107, 142, 78, 0.90)',   // 苔绿
-  'rgba(138, 171, 110, 0.85)',  // 嫩芽
-  'rgba(217, 165, 91, 0.90)',   // 蜂蜜金
-  'rgba(232, 197, 142, 0.85)',  // 浅蜂蜜
-  'rgba(215, 123, 133, 0.85)',  // 玫瑰
-]
-
-// 点缀小元素：保留老版 🐾 + 加入森林系叶子/花
-const accents = ['🐾', '🐾', '🍃', '🌿', '✿', '🐾']
+import { useEffect, useRef } from 'react'
+import { useTheme } from '../lib/theme'
 
 /**
- * 水彩光点拖尾 + 偶尔飘落的小叶。
- * 设计原则：
- * - 用径向渐变的圆点而非 emoji，更像水彩晕染
- * - 颜色从森林系调色板抽取
- * - 上飘 + 微小水平漂移，模拟空气中的尘埃光
- * - 每 7 个粒子穿插一个小叶/星号，避免单调
+ * 主题化的水彩光点拖尾 + 持续飘落的小元素。
+ * 每个主题有自己的颜色和符号。
  */
 export default function CursorTrail() {
+  const { theme } = useTheme()
+  // 用 ref 让 effect 内闭包能拿到最新主题（避免每次主题变化都重启监听）
+  const themeRef = useRef(theme)
+  useEffect(() => { themeRef.current = theme }, [theme])
+
   useEffect(() => {
     let lastSpawn = 0
     let count = 0
 
     function spawnDot(x: number, y: number) {
-      const size = 10 + Math.random() * 14   // 更大：10-24px
-      const color = dotColors[Math.floor(Math.random() * dotColors.length)]
+      const t = themeRef.current
+      const size = 10 + Math.random() * 14
+      const color = t.trailColors[Math.floor(Math.random() * t.trailColors.length)]
 
       const dot = document.createElement('div')
       dot.style.cssText = `
@@ -46,27 +36,26 @@ export default function CursorTrail() {
         will-change: transform, opacity;
       `
       document.body.appendChild(dot)
-
       requestAnimationFrame(() => {
         dot.style.opacity = '0'
         const dx = (Math.random() - 0.5) * 30
         const dy = -16 - Math.random() * 18
         dot.style.transform = `translate(${dx}px, ${dy}px) scale(0.5)`
       })
-
       setTimeout(() => dot.remove(), 700)
     }
 
     function spawnAccent(x: number, y: number) {
+      const t = themeRef.current
       const el = document.createElement('span')
-      el.textContent = accents[Math.floor(Math.random() * accents.length)]
+      el.textContent = t.accents[Math.floor(Math.random() * t.accents.length)]
       const colorIdx = Math.floor(Math.random() * 3)
       el.style.cssText = `
         position: fixed;
         left: ${x - 9}px;
         top: ${y - 9}px;
         font-size: 18px;
-        color: ${dotColors[colorIdx].replace(/0\.\d+/, '1')};
+        color: ${t.trailColors[colorIdx].replace(/0\.\d+/, '1')};
         pointer-events: none;
         user-select: none;
         z-index: 9999;
@@ -76,14 +65,12 @@ export default function CursorTrail() {
         will-change: transform, opacity;
       `
       document.body.appendChild(el)
-
       requestAnimationFrame(() => {
         el.style.opacity = '0'
         const dx = (Math.random() - 0.5) * 40
         const dy = -24 - Math.random() * 22
         el.style.transform += ` translate(${dx}px, ${dy}px) scale(0.7)`
       })
-
       setTimeout(() => el.remove(), 1000)
     }
 
@@ -92,8 +79,6 @@ export default function CursorTrail() {
       if (now - lastSpawn < 35) return
       lastSpawn = now
       count++
-
-      // 比例：约 1/4 是 emoji（🐾 + 叶子），3/4 是水彩光点
       if (count % 4 === 0) {
         spawnAccent(e.clientX, e.clientY)
       } else {
@@ -105,13 +90,12 @@ export default function CursorTrail() {
     return () => document.removeEventListener('mousemove', onMove)
   }, [])
 
-  // —— 持续飘落的小叶（背景氛围） ——
+  // 持续飘落
   useEffect(() => {
-    const fallEmojis = ['🍃', '🍂', '🌿', '✿']
-
     function spawnLeaf() {
+      const t = themeRef.current
       const leaf = document.createElement('span')
-      leaf.textContent = fallEmojis[Math.floor(Math.random() * fallEmojis.length)]
+      leaf.textContent = t.fallEmojis[Math.floor(Math.random() * t.fallEmojis.length)]
       leaf.style.cssText = `
         position: fixed;
         top: -40px;
