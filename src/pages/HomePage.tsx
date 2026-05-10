@@ -41,17 +41,17 @@ export default function HomePage() {
         <div>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="tracking-widest text-sm md:text-base mb-4 uppercase"
-            style={{ color: 'var(--color-honey)', letterSpacing: '0.2em' }}
+            className="text-sm md:text-base mb-4"
+            style={{ color: 'var(--color-forest)' }}
           >
-            Daily Care · Pet Notes
+            — 给毛孩子的专属记忆本 —
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
             className="text-5xl md:text-7xl leading-[1.15] mb-6"
           >
-            把每一个 <span style={{ background: 'linear-gradient(180deg, transparent 62%, rgba(232, 197, 142, 0.7) 62%)', padding: '0 6px' }}>温柔瞬间</span><br />
-            做成手帐<span style={{ color: 'var(--color-honey)' }}>.</span>
+            把每一个 <span style={{ background: 'linear-gradient(180deg, transparent 62%, rgba(217, 165, 91, 0.55) 62%)', padding: '0 6px' }}>温柔瞬间</span><br />
+            做成手帐<span style={{ color: 'var(--color-forest)' }}>.</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
@@ -107,7 +107,7 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="card-paper max-w-2xl mx-auto text-center !py-14 !px-10"
         >
-          <p className="text-sm mb-3 uppercase tracking-widest" style={{ color: 'var(--color-honey)', letterSpacing: '0.2em' }}>Start Today</p>
+          <p className="text-sm mb-3" style={{ color: 'var(--color-forest)' }}>— 一段温柔的开始 —</p>
           <h2 className="text-4xl md:text-5xl mb-4 leading-tight">开始你和它的<br />第一页</h2>
           <p className="mb-8" style={{ color: 'var(--color-ink-soft)' }}>注册即送 50 张限定贴纸 · 永久免费基础版</p>
           <Link to={session ? '/dashboard' : '/signup'} className="btn-primary text-base">
