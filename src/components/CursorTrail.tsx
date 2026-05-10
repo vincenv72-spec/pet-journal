@@ -10,8 +10,8 @@ const dotColors = [
   'rgba(215, 123, 133, 0.85)',  // 玫瑰
 ]
 
-// 每 7 个粒子穿插一个小元素当点缀
-const accents = ['🍃', '✿', '🌿', '·']
+// 点缀小元素：保留老版 🐾 + 加入森林系叶子/花
+const accents = ['🐾', '🐾', '🍃', '🌿', '✿', '🐾']
 
 /**
  * 水彩光点拖尾 + 偶尔飘落的小叶。
@@ -63,37 +63,38 @@ export default function CursorTrail() {
       const colorIdx = Math.floor(Math.random() * 3)
       el.style.cssText = `
         position: fixed;
-        left: ${x - 8}px;
-        top: ${y - 8}px;
-        font-size: 16px;
+        left: ${x - 9}px;
+        top: ${y - 9}px;
+        font-size: 18px;
         color: ${dotColors[colorIdx].replace(/0\.\d+/, '1')};
         pointer-events: none;
         user-select: none;
         z-index: 9999;
         opacity: 1;
-        transition: opacity 0.9s ease-out, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
-        transform: rotate(${(Math.random() - 0.5) * 30}deg);
+        transition: opacity 1s ease-out, transform 1s cubic-bezier(0.2, 0.7, 0.2, 1);
+        transform: rotate(${(Math.random() - 0.5) * 60}deg);
         will-change: transform, opacity;
       `
       document.body.appendChild(el)
 
       requestAnimationFrame(() => {
         el.style.opacity = '0'
-        const dx = (Math.random() - 0.5) * 30
-        const dy = -22 - Math.random() * 18
+        const dx = (Math.random() - 0.5) * 40
+        const dy = -24 - Math.random() * 22
         el.style.transform += ` translate(${dx}px, ${dy}px) scale(0.7)`
       })
 
-      setTimeout(() => el.remove(), 900)
+      setTimeout(() => el.remove(), 1000)
     }
 
     function onMove(e: MouseEvent) {
       const now = Date.now()
-      if (now - lastSpawn < 35) return  // 更密：35ms 一个
+      if (now - lastSpawn < 35) return
       lastSpawn = now
       count++
 
-      if (count % 9 === 0) {
+      // 比例：约 1/4 是 emoji（🐾 + 叶子），3/4 是水彩光点
+      if (count % 4 === 0) {
         spawnAccent(e.clientX, e.clientY)
       } else {
         spawnDot(e.clientX, e.clientY)

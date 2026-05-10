@@ -79,8 +79,8 @@
   .input {
     width: 100%; padding: 0.875rem 1.125rem; border-radius: 0.875rem;
     border: 1px solid rgba(122, 106, 92, 0.15);
-    background: rgba(255, 255, 255, 0.35);
-    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.30);
+    backdrop-filter: blur(4px);
     outline: none; transition: all .15s;
     font-family: inherit; font-size: 1rem;
     color: var(--color-ink);
@@ -92,17 +92,17 @@
     box-shadow: 0 0 0 4px rgba(79, 121, 66, 0.15);
   }
 
-  /* —— 雾面奶油卡片：透明、有空气感 —— */
+  /* —— 雾面奶油卡片：薄薄一层奶油纱，背景插画清晰可见 —— */
   .card-paper {
     border-radius: 1.5rem; padding: 1.75rem; position: relative;
     background: var(--color-glass);
-    backdrop-filter: blur(28px) saturate(115%);
-    -webkit-backdrop-filter: blur(28px) saturate(115%);
+    backdrop-filter: blur(6px) saturate(108%);
+    -webkit-backdrop-filter: blur(6px) saturate(108%);
     border: 1px solid var(--color-glass-border);
     box-shadow:
-      0 1px 0 rgba(255,255,255,0.6) inset,
-      0 8px 24px -10px rgba(120, 90, 60, 0.08),
-      0 30px 60px -25px rgba(120, 90, 60, 0.14);
+      0 1px 0 rgba(255,255,255,0.5) inset,
+      0 8px 24px -10px rgba(120, 90, 60, 0.06),
+      0 30px 60px -25px rgba(120, 90, 60, 0.12);
   }
   /* 老的胶带样式保留但更柔 */
   .card-paper-tape::before {
