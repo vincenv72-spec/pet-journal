@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase, type Pet, type Species, SPECIES_LABEL, SPECIES_EMOJI } from '../lib/supabase'
+import { supabase, type Pet, type Species, SPECIES_LABEL, SPECIES_EMOJI, BREED_PRESETS } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 
@@ -196,7 +196,7 @@ function PetCard({ pet, index, onEdit, onDelete }: { pet: Pet; index: number; on
           <Link to={`/pets/${pet.id}`} className="block">
             <h3 className="text-2xl mb-0.5 truncate">{pet.name}</h3>
             <p className="text-sm truncate" style={{ color: 'var(--color-ink-soft)' }}>
-              {SPECIES_LABEL[pet.species]}
+              {pet.breed ? <>{SPECIES_EMOJI[pet.species]} {pet.breed}</> : SPECIES_LABEL[pet.species]}
               {pet.birth_date && <span> · {age(pet.birth_date)}</span>}
             </p>
           </Link>
@@ -221,6 +221,7 @@ function PetCard({ pet, index, onEdit, onDelete }: { pet: Pet; index: number; on
 function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; ownerId: string; onClose: () => void; onSaved: () => void }) {
   const [name, setName] = useState(pet?.name ?? '')
   const [species, setSpecies] = useState<Species>(pet?.species ?? 'cat')
+  const [breed, setBreed] = useState(pet?.breed ?? '')
   const [birthDate, setBirthDate] = useState(pet?.birth_date ?? '')
   const [note, setNote] = useState(pet?.note ?? '')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(pet?.avatar_url ?? null)
@@ -258,6 +259,7 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
         owner_id: ownerId,
         name: name.trim(),
         species,
+        breed: breed.trim() || null,
         birth_date: birthDate || null,
         note: note.trim() || null,
         avatar_url: avatarUrl,
@@ -338,7 +340,8 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
             <div className="flex flex-wrap gap-2">
               {(Object.keys(SPECIES_LABEL) as Species[]).map((s) => (
                 <button
-                  key={s} type="button" onClick={() => setSpecies(s)}
+                  key={s} type="button"
+                  onClick={() => { setSpecies(s); setBreed('') }}
                   className="px-3 py-2 rounded-xl text-sm transition"
                   style={{
                     background: species === s ? 'var(--color-tape)' : 'rgba(255,255,255,0.4)',
@@ -349,6 +352,36 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* 品种细分 */}
+          <div>
+            <label className="block mb-2 text-sm">品种（可选）</label>
+            {BREED_PRESETS[species] && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {BREED_PRESETS[species]!.map((b) => (
+                  <button
+                    key={b} type="button"
+                    onClick={() => setBreed(b)}
+                    className="px-2.5 py-1 rounded-full text-xs transition"
+                    style={{
+                      background: breed === b ? 'var(--color-forest)' : 'rgba(255,255,255,0.4)',
+                      color: breed === b ? 'white' : 'var(--color-ink-soft)',
+                      border: '1px solid ' + (breed === b ? 'var(--color-forest)' : 'rgba(122,106,92,0.15)'),
+                    }}
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
+            )}
+            <input
+              className="input"
+              value={breed}
+              onChange={(e) => setBreed(e.target.value)}
+              placeholder={BREED_PRESETS[species] ? '点选上方或自由输入' : '比如 安哥拉 / 蓝色 / 山雀'}
+              maxLength={20}
+            />
           </div>
 
           {/* 生日 */}

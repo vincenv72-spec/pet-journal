@@ -82,7 +82,7 @@ export default function PetDetailPage() {
           <div className="flex-1 min-w-0">
             <h1 className="text-4xl mb-1">{pet.name}</h1>
             <p style={{ color: 'var(--color-ink-soft)' }}>
-              {SPECIES_LABEL[pet.species]}
+              {pet.breed ? <>{SPECIES_EMOJI[pet.species]} {pet.breed}</> : SPECIES_LABEL[pet.species]}
               {pet.birth_date && <span> · 生日 {pet.birth_date} · {ageString(pet.birth_date)}</span>}
             </p>
             {pet.note && <p className="mt-2 handwrite text-lg">"{pet.note}"</p>}

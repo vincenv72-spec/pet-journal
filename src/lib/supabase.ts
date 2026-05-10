@@ -28,11 +28,18 @@ export type Pet = {
   owner_id: string
   name: string
   species: Species
+  breed: string | null
   avatar_url: string | null
   birth_date: string | null
   note: string | null
   created_at: string
   updated_at: string
+}
+
+// 常见品种快选（其他物种保持自由输入）
+export const BREED_PRESETS: Partial<Record<Species, string[]>> = {
+  cat: ['田园猫', '橘猫', '狸花', '英短', '美短', '布偶', '暹罗', '折耳', '加菲', '缅因', '阿比', '无毛'],
+  dog: ['田园犬', '金毛', '拉布拉多', '柴犬', '边牧', '哈士奇', '萨摩耶', '比熊', '泰迪', '法斗', '柯基', '博美'],
 }
 
 export const SPECIES_LABEL: Record<Species, string> = {
