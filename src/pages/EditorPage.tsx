@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { supabase, type Entry, type Pet, SPECIES_EMOJI } from '../lib/supabase'
+import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 
@@ -20,6 +20,8 @@ export default function EditorPage() {
   const [petId, setPetId] = useState<string | null>(searchParams.get('pet') || null)
   const [entryDate, setEntryDate] = useState(today())
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [tags, setTags] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
   const [pets, setPets] = useState<Pet[]>([])
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -47,6 +49,7 @@ export default function EditorPage() {
         setPetId(e.pet_id)
         setEntryDate(e.entry_date)
         setPhotoUrl(e.photo_url)
+        setTags(e.tags ?? [])
       }
       setLoading(false)
     })
@@ -87,9 +90,10 @@ export default function EditorPage() {
         content,
         mood,
         pet_id: petId,
-        pet_name: selectedPet?.name ?? null,  // 冗余存一份名字方便显示
+        pet_name: selectedPet?.name ?? null,
         entry_date: entryDate,
         photo_url: photoUrl,
+        tags,
       }
       if (isNew) {
         const { error } = await supabase.from('entries').insert(payload)
@@ -189,6 +193,82 @@ export default function EditorPage() {
             <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading}
               className="block text-sm" />
             {uploading && <p className="text-sm mt-1">上传中...</p>}
+          </div>
+
+          {/* 标签 */}
+          <div>
+            <label className="block mb-2 text-sm">标签（可选）</label>
+            {/* 已选标签 */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {tags.map((t) => {
+                  const preset = TAG_PRESETS.find((p) => p.value === t)
+                  return (
+                    <button
+                      key={t} type="button"
+                      onClick={() => setTags(tags.filter((x) => x !== t))}
+                      className="px-3 py-1 rounded-full text-sm transition flex items-center gap-1.5"
+                      style={{
+                        background: 'var(--color-forest)',
+                        color: 'white',
+                        border: '1px solid var(--color-forest)',
+                      }}
+                    >
+                      {preset?.emoji ?? '🏷'} {t}
+                      <span className="opacity-60 ml-0.5">×</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+            {/* 预设快选 */}
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {TAG_PRESETS.filter((p) => !tags.includes(p.value)).map((p) => (
+                <button
+                  key={p.value} type="button"
+                  onClick={() => setTags([...tags, p.value])}
+                  className="px-2.5 py-1 rounded-full text-xs transition"
+                  style={{
+                    background: 'rgba(255,255,255,0.4)',
+                    color: 'var(--color-ink-soft)',
+                    border: '1px solid rgba(122,106,92,0.15)',
+                  }}
+                >
+                  {p.emoji} {p.value}
+                </button>
+              ))}
+            </div>
+            {/* 自由输入 */}
+            <div className="flex gap-2">
+              <input
+                className="input flex-1"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault()
+                    const v = tagInput.trim()
+                    if (v && !tags.includes(v) && tags.length < 10) {
+                      setTags([...tags, v])
+                      setTagInput('')
+                    }
+                  }
+                }}
+                placeholder="自由输入按 Enter / 逗号添加"
+                maxLength={12}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const v = tagInput.trim()
+                  if (v && !tags.includes(v) && tags.length < 10) {
+                    setTags([...tags, v])
+                    setTagInput('')
+                  }
+                }}
+                className="btn-ghost text-sm"
+              >＋</button>
+            </div>
           </div>
 
           {/* 正文 */}

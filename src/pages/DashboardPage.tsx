@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { supabase, type Entry, type Pet, SPECIES_EMOJI } from '../lib/supabase'
+import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 
@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
   const [filterPetId, setFilterPetId] = useState<string | null>(null)
+  const [filterTag, setFilterTag] = useState<string | null>(null)
 
   useEffect(() => {
     if (!session) return
@@ -26,10 +27,24 @@ export default function DashboardPage() {
   }, [session])
 
   const filtered = useMemo(() => {
-    if (filterPetId === null) return entries
-    if (filterPetId === '__none__') return entries.filter((e) => !e.pet_id)
-    return entries.filter((e) => e.pet_id === filterPetId)
-  }, [entries, filterPetId])
+    let list = entries
+    if (filterPetId !== null) {
+      list = filterPetId === '__none__'
+        ? list.filter((e) => !e.pet_id)
+        : list.filter((e) => e.pet_id === filterPetId)
+    }
+    if (filterTag) {
+      list = list.filter((e) => e.tags?.includes(filterTag))
+    }
+    return list
+  }, [entries, filterPetId, filterTag])
+
+  // 收集所有用过的标签
+  const usedTags = useMemo(() => {
+    const set = new Set<string>()
+    entries.forEach((e) => e.tags?.forEach((t) => set.add(t)))
+    return Array.from(set).sort()
+  }, [entries])
 
   async function handleDelete(id: string) {
     if (!confirm('确认删除这篇手帐吗？')) return
@@ -72,7 +87,7 @@ export default function DashboardPage() {
 
       {/* 宠物筛选 Tab 条 */}
       {pets.length > 0 && !loading && (
-        <div className="flex flex-wrap gap-2 mb-8 relative z-10">
+        <div className="flex flex-wrap gap-2 mb-3 relative z-10">
           <FilterPill active={filterPetId === null} onClick={() => setFilterPetId(null)} count={entries.length}>
             全部
           </FilterPill>
@@ -91,6 +106,38 @@ export default function DashboardPage() {
           >
             未指定
           </FilterPill>
+        </div>
+      )}
+
+      {/* 标签筛选条 */}
+      {usedTags.length > 0 && !loading && (
+        <div className="flex flex-wrap gap-1.5 mb-8 relative z-10">
+          <button
+            onClick={() => setFilterTag(null)}
+            className="px-2.5 py-0.5 rounded-full text-xs transition"
+            style={{
+              background: filterTag === null ? 'var(--color-honey)' : 'rgba(255,255,255,0.4)',
+              color: filterTag === null ? 'white' : 'var(--color-ink-soft)',
+              border: '1px solid ' + (filterTag === null ? 'var(--color-honey)' : 'rgba(122,106,92,0.15)'),
+            }}
+          >全部标签</button>
+          {usedTags.map((t) => {
+            const preset = TAG_PRESETS.find((p) => p.value === t)
+            return (
+              <button
+                key={t}
+                onClick={() => setFilterTag(filterTag === t ? null : t)}
+                className="px-2.5 py-0.5 rounded-full text-xs transition"
+                style={{
+                  background: filterTag === t ? 'var(--color-honey)' : 'rgba(255,255,255,0.4)',
+                  color: filterTag === t ? 'white' : 'var(--color-ink-soft)',
+                  border: '1px solid ' + (filterTag === t ? 'var(--color-honey)' : 'rgba(122,106,92,0.15)'),
+                }}
+              >
+                {preset?.emoji ?? '🏷'} {t}
+              </button>
+            )
+          })}
         </div>
       )}
 
@@ -123,9 +170,22 @@ export default function DashboardPage() {
                   · {entry.pet_name} ·
                 </p>
               )}
-              <p className="text-sm line-clamp-3 mb-4" style={{ color: 'var(--color-ink-soft)' }}>
+              <p className="text-sm line-clamp-3 mb-3" style={{ color: 'var(--color-ink-soft)' }}>
                 {entry.content || '（空）'}
               </p>
+              {entry.tags && entry.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {entry.tags.slice(0, 4).map((t) => {
+                    const preset = TAG_PRESETS.find((p) => p.value === t)
+                    return (
+                      <span key={t} className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ background: 'rgba(255,232,200,0.6)', color: 'var(--color-ink-soft)' }}>
+                        {preset?.emoji ?? '🏷'} {t}
+                      </span>
+                    )
+                  })}
+                </div>
+              )}
               <div className="flex gap-3 text-sm">
                 <Link to={`/editor/${entry.id}`} className="underline" style={{ color: 'var(--color-forest)' }}>编辑</Link>
                 <button onClick={() => handleDelete(entry.id)} style={{ color: 'var(--color-rose)' }}>删除</button>

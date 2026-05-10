@@ -17,9 +17,26 @@ export type Entry = {
   pet_id: string | null
   entry_date: string
   photo_url: string | null
+  tags: string[]
   created_at: string
   updated_at: string
 }
+
+// 标签预设（用户也能自由输入）
+export const TAG_PRESETS = [
+  { value: '日常', emoji: '🌿' },
+  { value: '吃喝', emoji: '🍖' },
+  { value: '运动', emoji: '🎾' },
+  { value: '出游', emoji: '🌳' },
+  { value: '就医', emoji: '🏥' },
+  { value: '美容', emoji: '✂️' },
+  { value: '睡相', emoji: '😴' },
+  { value: '犯傻', emoji: '🤪' },
+  { value: '撒娇', emoji: '🥰' },
+  { value: '学习', emoji: '🎓' },
+  { value: '节日', emoji: '🎉' },
+  { value: '生日', emoji: '🎂' },
+] as const
 
 export type Species = 'cat' | 'dog' | 'rabbit' | 'bird' | 'hamster' | 'fish' | 'other'
 
