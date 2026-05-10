@@ -6,89 +6,94 @@ export default function HomePage() {
   const { session } = useAuth()
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* 装饰胶带 */}
-      <div className="absolute -top-2 -left-10 w-56 h-9 bg-tape rotate-[-12deg] opacity-80"
-           style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 8px, rgba(255,255,255,0.3) 8px 10px)' }} />
-      <div className="absolute top-8 -right-12 w-44 h-7 rotate-[15deg] opacity-70"
-           style={{ background: 'var(--color-sprout)', backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 8px, rgba(255,255,255,0.3) 8px 10px)' }} />
+    <div className="min-h-screen relative">
+      {/* 顶部柔光暖区（晨光照在 hero 上的感觉） */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[720px] -z-10"
+        style={{
+          background:
+            'radial-gradient(700px 420px at 50% -10%, rgba(255, 210, 165, 0.55), transparent 70%),' +
+            'radial-gradient(500px 320px at 20% 10%, rgba(232, 197, 142, 0.40), transparent 70%),' +
+            'radial-gradient(550px 340px at 80% 12%, rgba(220, 235, 195, 0.35), transparent 70%)',
+        }}
+      />
 
       {/* 导航 */}
-      <nav className="flex items-center justify-between px-8 md:px-14 py-5">
+      <nav className="flex items-center justify-between px-6 md:px-14 py-5 relative z-20">
         <Link to="/" className="flex items-center gap-2 text-2xl handwrite font-bold">
           <PawLogo /> 宠物手帐
         </Link>
-        <div className="flex items-center gap-6 text-base">
+        <div className="flex items-center gap-5 text-base">
           {session ? (
             <Link to="/dashboard" className="btn-primary !py-2 !px-5 !text-sm">进入手帐本 →</Link>
           ) : (
             <>
-              <Link to="/login" className="hover:underline">登录</Link>
+              <Link to="/login" className="hover:opacity-70 transition-opacity">登录</Link>
               <Link to="/signup" className="btn-primary !py-2 !px-5 !text-sm">免费注册</Link>
             </>
           )}
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="grid md:grid-cols-2 gap-12 items-center px-8 md:px-20 py-12 md:py-24">
+      {/* Hero —— 文字 + 主视觉宠物 */}
+      <section className="grid md:grid-cols-2 gap-10 items-center px-6 md:px-20 pt-8 md:pt-14 pb-32 md:pb-40 relative z-10">
         <div>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="text-forest tracking-widest text-sm md:text-base mb-3"
-            style={{ color: 'var(--color-forest)' }}
+            className="tracking-widest text-sm md:text-base mb-4 uppercase"
+            style={{ color: 'var(--color-honey)', letterSpacing: '0.2em' }}
           >
-            — 给毛孩子的专属记忆本 —
+            Daily Care · Pet Notes
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="text-5xl md:text-7xl leading-tight mb-6"
+            className="text-5xl md:text-7xl leading-[1.15] mb-6"
           >
-            把每一个 <span style={{ background: 'linear-gradient(180deg, transparent 60%, #D9A55B 60%)', padding: '0 6px' }}>温柔瞬间</span><br />
-            做成手帐<span style={{ color: 'var(--color-forest)' }}>.</span>
+            把每一个 <span style={{ background: 'linear-gradient(180deg, transparent 62%, rgba(232, 197, 142, 0.7) 62%)', padding: '0 6px' }}>温柔瞬间</span><br />
+            做成手帐<span style={{ color: 'var(--color-honey)' }}>.</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
             className="text-lg max-w-md mb-8" style={{ color: 'var(--color-ink-soft)' }}
           >
-            记录吃饭、散步、犯傻和睡相，<br />
+            记录吃饭、散步、犯傻和睡相。<br />
             用文字、心情和照片，拼出属于你和它的小日子。
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }}
-            className="flex gap-4 items-center flex-wrap"
+            className="flex gap-3 items-center flex-wrap"
           >
-            <Link to={session ? '/dashboard' : '/signup'} className="btn-primary text-lg">
+            <Link to={session ? '/dashboard' : '/signup'} className="btn-primary text-base">
               {session ? '继续记录 →' : '开始我的手帐 →'}
             </Link>
-            <span className="px-3 py-1 border-2 rounded text-sm" style={{ borderColor: 'var(--color-sprout)', color: 'var(--color-sprout)', transform: 'rotate(-2deg)', display: 'inline-block' }}>
-              ★ 12,438 位铲屎官在用
-            </span>
+            <span className="pill">★ 12,438 位铲屎官在用</span>
           </motion.div>
         </div>
 
-        {/* 主视觉宠物 */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}
-          className="relative h-[420px]"
+          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}
+          className="relative h-[380px] md:h-[440px]"
         >
           <PetIllustration />
         </motion.div>
       </section>
 
-      {/* 三个功能 */}
-      <section className="px-8 md:px-20 py-20" style={{ background: 'linear-gradient(180deg, transparent, var(--color-bg-deep) 50%, transparent)' }}>
-        <h2 className="text-center text-3xl md:text-4xl mb-3">三件事，慢慢做就好</h2>
-        <p className="text-center text-base mb-14" style={{ color: 'var(--color-ink-soft)' }}>不需要会画画，也能拥有最可爱的手帐本</p>
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      {/* 三个功能 —— 卡片向上叠在 Hero 之下，制造层次 */}
+      <section className="px-6 md:px-20 -mt-24 md:-mt-32 pb-24 relative z-10">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl mb-3">三件事，慢慢做就好</h2>
+          <p className="text-base" style={{ color: 'var(--color-ink-soft)' }}>不需要会画画，也能拥有最可爱的手帐本</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {features.map((f, i) => (
             <motion.div
               key={f.title}
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.12 }}
-              className="card-paper card-paper-tape hover:-translate-y-2 transition-transform"
+              viewport={{ once: true }} transition={{ delay: i * 0.10 }}
+              className="card-paper hover:-translate-y-1 transition-transform duration-300"
             >
-              <div className="text-4xl mb-3">{f.icon}</div>
+              <div className="text-3xl mb-3">{f.icon}</div>
               <h3 className="text-2xl mb-2">{f.title}</h3>
               <p style={{ color: 'var(--color-ink-soft)' }}>{f.desc}</p>
             </motion.div>
@@ -97,17 +102,18 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="px-8 md:px-20 py-20">
+      <section className="px-6 md:px-20 py-12 md:py-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="card-paper max-w-2xl mx-auto text-center !py-16 !px-10 relative overflow-hidden"
+          className="card-paper max-w-2xl mx-auto text-center !py-14 !px-10"
         >
+          <p className="text-sm mb-3 uppercase tracking-widest" style={{ color: 'var(--color-honey)', letterSpacing: '0.2em' }}>Start Today</p>
           <h2 className="text-4xl md:text-5xl mb-4 leading-tight">开始你和它的<br />第一页</h2>
           <p className="mb-8" style={{ color: 'var(--color-ink-soft)' }}>注册即送 50 张限定贴纸 · 永久免费基础版</p>
-          <Link to={session ? '/dashboard' : '/signup'} className="btn-primary text-lg">
+          <Link to={session ? '/dashboard' : '/signup'} className="btn-primary text-base">
             {session ? '回到手帐本 →' : '立刻领取 →'}
           </Link>
-          <p className="mt-6 tracking-widest opacity-50">🐾 🐾 🐾 🐾 🐾</p>
+          <p className="mt-6 tracking-[0.4em] opacity-40 text-sm">🐾 🐾 🐾 🐾 🐾</p>
         </motion.div>
       </section>
 
