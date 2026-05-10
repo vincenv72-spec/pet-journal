@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import EditorPage from './pages/EditorPage'
+import CursorTrail from './components/CursorTrail'
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
@@ -15,6 +16,7 @@ function Protected({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <AuthProvider>
+      <CursorTrail />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
