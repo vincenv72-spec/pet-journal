@@ -1,11 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string
-
-if (!url || !key) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env')
-}
+// Supabase publishable key 设计上就是公开的（配合数据库 RLS 使用），
+// 所以可以放在前端代码里。如果想换 URL/key，可以用环境变量覆盖。
+const url = (import.meta.env.VITE_SUPABASE_URL as string) || 'https://iwincsvrmjiszzeuhnfe.supabase.co'
+const key = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 'sb_publishable_dDQkRknwD8gz-ZvIYWTURA_9PI0mt1E'
 
 export const supabase = createClient(url, key)
 
