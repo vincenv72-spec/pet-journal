@@ -54,10 +54,10 @@ export default function PetDetailPage() {
           🌿 宠物手帐
         </Link>
         <nav className="flex items-center gap-5 text-sm">
-          <Link to="/dashboard" className="hover:opacity-70">手帐本</Link>
-          <Link to="/pets" className="font-bold" style={{ color: 'var(--color-forest)' }}>毛孩子</Link>
-          <span style={{ color: 'var(--color-ink-soft)' }}>{session?.user.email}</span>
-          <button onClick={logout} className="underline">退出</button>
+          <Link to="/dashboard" className="hidden md:inline hover:opacity-70">手帐本</Link>
+          <Link to="/pets" className="hidden md:inline font-bold" style={{ color: 'var(--color-forest)' }}>毛孩子</Link>
+          <span className="hidden sm:inline text-xs md:text-sm" style={{ color: 'var(--color-ink-soft)' }}>{session?.user.email}</span>
+          <button onClick={logout} className="underline text-sm">退出</button>
         </nav>
       </header>
 

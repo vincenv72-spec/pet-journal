@@ -8,12 +8,18 @@ import PetsPage from './pages/PetsPage'
 import PetDetailPage from './pages/PetDetailPage'
 import YearReviewPage from './pages/YearReviewPage'
 import CursorTrail from './components/CursorTrail'
+import BottomNav from './components/BottomNav'
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
   if (loading) return <p className="text-center py-20">加载中...</p>
   if (!session) return <Navigate to="/login" replace />
-  return <>{children}</>
+  return (
+    <>
+      <div className="pb-20 md:pb-0">{children}</div>
+      <BottomNav />
+    </>
+  )
 }
 
 export default function App() {
