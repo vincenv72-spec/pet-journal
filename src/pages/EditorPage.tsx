@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS } from '../lib/supabase'
+import { supabase, type Entry, type Pet, type PetPovStyle, SPECIES_EMOJI, SPECIES_CN, TAG_PRESETS } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
+import PetPovGenerator from '../components/PetPovGenerator'
 
 const MOODS = ['🐾', '😺', '🐶', '😴', '🥰', '😋', '🥺', '🤔', '🎉', '💖']
 
@@ -23,6 +24,9 @@ export default function EditorPage() {
   const [tags, setTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState('')
   const [pets, setPets] = useState<Pet[]>([])
+  const [povText, setPovText] = useState<string | null>(null)
+  const [povStyle, setPovStyle] = useState<PetPovStyle | null>(null)
+  const [povGeneratedAt, setPovGeneratedAt] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(!isNew)
@@ -50,6 +54,9 @@ export default function EditorPage() {
         setEntryDate(e.entry_date)
         setPhotoUrl(e.photo_url)
         setTags(e.tags ?? [])
+        setPovText(e.pet_pov_text)
+        setPovStyle(e.pet_pov_style)
+        setPovGeneratedAt(e.pet_pov_generated_at)
       }
       setLoading(false)
     })
@@ -94,6 +101,9 @@ export default function EditorPage() {
         entry_date: entryDate,
         photo_url: photoUrl,
         tags,
+        pet_pov_text: povText,
+        pet_pov_style: povStyle,
+        pet_pov_generated_at: povGeneratedAt,
       }
       if (isNew) {
         const { error } = await supabase.from('entries').insert(payload)
@@ -279,6 +289,30 @@ export default function EditorPage() {
               placeholder="今天它把袜子叼到了门口..."
             />
           </div>
+
+          {/* 宠物视角（AI 翻译） */}
+          <PetPovGenerator
+            content={content}
+            petName={pets.find((p) => p.id === petId)?.name ?? null}
+            petSpecies={
+              (() => {
+                const p = pets.find((p) => p.id === petId)
+                return p ? SPECIES_CN[p.species] : null
+              })()
+            }
+            povText={povText}
+            povStyle={povStyle}
+            onGenerated={(text, style) => {
+              setPovText(text)
+              setPovStyle(style)
+              setPovGeneratedAt(new Date().toISOString())
+            }}
+            onClear={() => {
+              setPovText(null)
+              setPovStyle(null)
+              setPovGeneratedAt(null)
+            }}
+          />
 
           {error && <p className="text-sm" style={{ color: 'var(--color-rose)' }}>{error}</p>}
 

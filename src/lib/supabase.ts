@@ -18,9 +18,22 @@ export type Entry = {
   entry_date: string
   photo_url: string | null
   tags: string[]
+  pet_pov_text: string | null
+  pet_pov_style: PetPovStyle | null
+  pet_pov_generated_at: string | null
   created_at: string
   updated_at: string
 }
+
+export const PET_POV_STYLES = [
+  { id: 'silly',    label: '傻乎乎', emoji: '🌿', description: '天真烂漫，对什么都好奇惊叹' },
+  { id: 'literary', label: '文艺',   emoji: '🌙', description: '安静细腻，观察光与气味' },
+  { id: 'cute',     label: '撒娇',   emoji: '🍯', description: '软糯黏人，叠词多多' },
+  { id: 'grumpy',   label: '暴躁',   emoji: '🌪', description: '吐槽担当，嫌弃但温柔' },
+  { id: 'cool',     label: '高冷',   emoji: '🌌', description: '克制简洁，看似不在乎' },
+] as const
+
+export type PetPovStyle = typeof PET_POV_STYLES[number]['id']
 
 // 标签预设（用户也能自由输入）
 export const TAG_PRESETS = [
@@ -67,6 +80,16 @@ export const SPECIES_LABEL: Record<Species, string> = {
   hamster: '🐹 仓鼠',
   fish: '🐟 鱼',
   other: '🐾 其他',
+}
+
+export const SPECIES_CN: Record<Species, string> = {
+  cat: '猫',
+  dog: '狗',
+  rabbit: '兔子',
+  bird: '鸟',
+  hamster: '仓鼠',
+  fish: '鱼',
+  other: '小动物',
 }
 
 export const SPECIES_EMOJI: Record<Species, string> = {
