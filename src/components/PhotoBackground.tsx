@@ -3,9 +3,10 @@ import { useTheme } from '../lib/theme'
 type Props = {
   photo?: 'hero' | 'login' | 'dashboard' | 'editor' | 'empty'
   intensity?: number
+  memorial?: boolean
 }
 
-export default function PhotoBackground({ photo = 'hero', intensity = 1 }: Props) {
+export default function PhotoBackground({ photo = 'hero', intensity = 1, memorial = false }: Props) {
   const { theme } = useTheme()
 
   return (
@@ -58,6 +59,19 @@ export default function PhotoBackground({ photo = 'hero', intensity = 1 }: Props
           mixBlendMode: 'overlay',
         }}
       />
+
+      {/* Layer 4.5 — 纪念馆色温（仅在 memorial 模式下生效，温暖深绿，安静而非悲伤） */}
+      {memorial && (
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-15 pointer-events-none"
+          style={{
+            background: 'rgba(47, 82, 51, 0.18)',
+            mixBlendMode: 'multiply',
+            transition: 'background 0.8s ease',
+          }}
+        />
+      )}
 
       {/* Layer 5 — 滚动渐隐 */}
       <div

@@ -62,8 +62,22 @@ export type Pet = {
   avatar_url: string | null
   birth_date: string | null
   note: string | null
+  passed_away_at: string | null
+  memorial_note: string | null
   created_at: string
   updated_at: string
+}
+
+export function isMemorial(pet: Pet | null | undefined): boolean {
+  return !!pet?.passed_away_at
+}
+
+export function daysBetween(start: string | null, end: string | null): number | null {
+  if (!start || !end) return null
+  const s = new Date(start).getTime()
+  const e = new Date(end).getTime()
+  if (Number.isNaN(s) || Number.isNaN(e)) return null
+  return Math.max(0, Math.round((e - s) / (1000 * 60 * 60 * 24)))
 }
 
 // 常见品种快选（其他物种保持自由输入）

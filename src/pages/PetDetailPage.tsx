@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase, type Pet, type Entry, SPECIES_LABEL, SPECIES_EMOJI } from '../lib/supabase'
+import { supabase, type Pet, type Entry, SPECIES_LABEL, SPECIES_EMOJI, isMemorial } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 import InviteModal from '../components/InviteModal'
+import MemorialMark from '../components/MemorialMark'
 
 type Tab = 'journal' | 'album' | 'mood'
 
@@ -47,7 +48,7 @@ export default function PetDetailPage() {
 
   return (
     <div className="min-h-screen px-6 md:px-16 py-8 relative">
-      <PhotoBackground photo="dashboard" intensity={0.55} />
+      <PhotoBackground photo="dashboard" intensity={0.55} memorial={isMemorial(pet)} />
 
       <header className="flex items-center justify-between mb-8 relative z-10">
         <Link to="/" className="flex items-center gap-2 text-2xl handwrite font-bold">
@@ -125,6 +126,12 @@ export default function PetDetailPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* 最后篇章 —— 平时折叠，点开才出现标记/撤销流程 */}
+        <MemorialMark
+          pet={pet}
+          onUpdate={(updates) => setPet((prev) => (prev ? { ...prev, ...updates } : prev))}
+        />
       </div>
 
       <AnimatePresence>
