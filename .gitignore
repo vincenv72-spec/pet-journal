@@ -20,6 +20,11 @@ dist-ssr
 # Image backups
 *.bak
 
+# Local handoff / session logs (may contain sensitive tokens, dev URLs)
+HANDOFF.md
+.claude-session-log.md
+.claude-sessions/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 
 export default function AuthPage() {
   const navigate = useNavigate()
+  const { session } = useAuth()
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState('')
   const [step, setStep] = useState<'email' | 'otp'>('email')
@@ -13,6 +15,10 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [resendCooldown, setResendCooldown] = useState(0)
+
+  useEffect(() => {
+    if (session) navigate('/dashboard', { replace: true })
+  }, [session, navigate])
 
   async function sendCode() {
     if (!email.trim()) {
@@ -29,7 +35,7 @@ export default function AuthPage() {
       })
       if (error) throw error
       setStep('otp')
-      setInfo('验证码已发送到你的邮箱（也可以直接点邮件里的登录链接）')
+      setInfo('验证码已发送到你的邮箱')
       // Cooldown
       setResendCooldown(60)
       const timer = setInterval(() => {
@@ -47,7 +53,7 @@ export default function AuthPage() {
 
   async function verifyCode() {
     if (!otp.trim() || otp.length < 6) {
-      setError('请输入 6 位验证码')
+      setError('请输入完整验证码')
       return
     }
     setLoading(true)
@@ -108,7 +114,7 @@ export default function AuthPage() {
             <motion.div key="otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <h1 className="text-4xl mt-3 mb-2">查收邮件 ✉️</h1>
               <p className="mb-2" style={{ color: 'var(--color-ink-soft)' }}>
-                我们发了 6 位验证码到
+                我们发了验证码到
               </p>
               <p className="mb-8 font-mono text-sm" style={{ color: 'var(--color-forest)' }}>
                 {email}
@@ -120,12 +126,12 @@ export default function AuthPage() {
                   <input
                     type="text"
                     inputMode="numeric"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
+                    pattern="[0-9]{6,8}"
+                    maxLength={8}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                     onKeyDown={(e) => e.key === 'Enter' && verifyCode()}
-                    className="input text-center text-3xl tracking-[0.5em] font-mono"
+                    className="input text-center text-3xl tracking-[0.4em] font-mono"
                     placeholder="······"
                     autoFocus
                   />
@@ -133,7 +139,7 @@ export default function AuthPage() {
                 {info && <p className="text-sm" style={{ color: 'var(--color-forest)' }}>{info}</p>}
                 {error && <p className="text-sm" style={{ color: 'var(--color-rose)' }}>{error}</p>}
 
-                <button onClick={verifyCode} disabled={loading || otp.length < 6} className="btn-primary w-full justify-center">
+                <button onClick={verifyCode} disabled={loading || otp.length < 6 || otp.length > 8} className="btn-primary w-full justify-center">
                   {loading ? '验证中...' : '登 录'}
                 </button>
 
@@ -150,10 +156,6 @@ export default function AuthPage() {
                     {resendCooldown > 0 ? `${resendCooldown}s 后可重发` : '重发验证码'}
                   </button>
                 </div>
-
-                <p className="text-xs text-center mt-4" style={{ color: 'var(--color-ink-soft)' }}>
-                  💡 也可以直接点邮件里的"一键登录"链接
-                </p>
               </div>
             </motion.div>
           )}

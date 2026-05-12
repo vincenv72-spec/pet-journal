@@ -6,7 +6,7 @@
 
 把每一个温柔瞬间做成手帐——记录吃饭、散步、犯傻和睡相，用文字、心情和照片，拼出属于你和毛孩子的小日子。
 
-[**🌐 在线访问**](https://pet-journal.vincenv72.workers.dev) · [**📦 GitHub 仓库**](https://github.com/vincenv72-spec/pet-journal)
+[**🌍 海外访问**](https://pet-journal.vincenv72.workers.dev) · [**🇨🇳 国内访问**](https://pet-journal-cn-d2gigyjbz13fa448c-1253801547.tcloudbaseapp.com) · [**📦 GitHub 仓库**](https://github.com/vincenv72-spec/pet-journal)
 
 </div>
 
