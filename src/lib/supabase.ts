@@ -29,11 +29,18 @@ export type Entry = {
 }
 
 export const PET_POV_STYLES = [
-  { id: 'silly',    label: '傻乎乎', emoji: '🌿', description: '天真烂漫，对什么都好奇惊叹' },
-  { id: 'literary', label: '文艺',   emoji: '🌙', description: '安静细腻，观察光与气味' },
-  { id: 'cute',     label: '撒娇',   emoji: '🍯', description: '软糯黏人，叠词多多' },
-  { id: 'grumpy',   label: '暴躁',   emoji: '🌪', description: '吐槽担当，嫌弃但温柔' },
-  { id: 'cool',     label: '高冷',   emoji: '🌌', description: '克制简洁，看似不在乎' },
+  { id: 'silly',       label: '傻乎乎', emoji: '🌿', description: '天真烂漫，对什么都好奇惊叹' },
+  { id: 'literary',    label: '文艺',   emoji: '🌙', description: '安静细腻，观察光与气味' },
+  { id: 'cute',        label: '撒娇',   emoji: '🍯', description: '软糯黏人，叠词多多' },
+  { id: 'grumpy',      label: '暴躁',   emoji: '🌪', description: '吐槽担当，嫌弃但温柔' },
+  { id: 'cool',        label: '高冷',   emoji: '🌌', description: '克制简洁，看似不在乎' },
+  { id: 'foodie',      label: '吃货',   emoji: '🍖', description: '一切以食物视角观察世界' },
+  { id: 'lazy',        label: '困倦',   emoji: '💤', description: '永远想睡，慢吞吞' },
+  { id: 'drama',       label: '戏精',   emoji: '🎭', description: '情绪夸张，日常变史诗' },
+  { id: 'elder',       label: '老干部', emoji: '☕', description: '长辈口吻，爱唠叨人间' },
+  { id: 'narcissist',  label: '自恋',   emoji: '🪞', description: '一切以自己为中心' },
+  { id: 'chuuni',      label: '中二',   emoji: '⚔️', description: '自带 BGM，凡人世界看不上' },
+  { id: 'philosopher', label: '哲学家', emoji: '🔮', description: '爱思考存在主义' },
 ] as const
 
 export type PetPovStyle = typeof PET_POV_STYLES[number]['id']

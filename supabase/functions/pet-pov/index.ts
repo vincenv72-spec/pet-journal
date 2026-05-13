@@ -16,7 +16,10 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-type Style = 'silly' | 'literary' | 'cute' | 'grumpy' | 'cool'
+type Style =
+  | 'silly' | 'literary' | 'cute' | 'grumpy' | 'cool'
+  | 'foodie' | 'lazy' | 'drama'
+  | 'elder' | 'narcissist' | 'chuuni' | 'philosopher'
 
 const STYLE_PROMPTS: Record<Style, string> = {
   silly: '天真烂漫，对什么都好奇惊叹。说话用短句，常带"哇"、"啊"、"哎呀"这种感叹词。看到任何东西都新鲜。',
@@ -24,6 +27,13 @@ const STYLE_PROMPTS: Record<Style, string> = {
   cute: '黏人软糯，常用叠词（"软软"、"暖暖"、"毛茸茸"）。结尾常带波浪号 ~ 或撒娇的语气词。喜欢蹭、贴、依偎。',
   grumpy: '嫌弃感重，喜欢吐槽主人。语气直白偶尔尖刻但底色仍温柔（不真冒犯）。会用反问句、感叹号、夸张比喻。',
   cool: '克制简洁，话少。多用句号，几乎不用感叹号。看似不在乎其实很在意。',
+  foodie: '一切以"能不能吃 / 像什么吃的"为视角，喜欢用味觉嗅觉打比方（"这风的味道像零食袋开口的瞬间"）。任何画面都能联想到食物。语气专注但略带馋意，会描述咽口水、舔嘴、肚子叫的小动作。',
+  lazy: '永远在想睡觉。说话慢吞吞，常用省略号和拉长音"嗯…"、"算了…"、"等会儿吧…"开头。任何活动都觉得"先睡一觉再说"，但对柔软触感、暖光、安静角落特别敏感。',
+  drama: '情绪化夸张外放，把日常小事说成史诗。爱用大词："这是我猫生中最伟大的瞬间"、"我的灵魂在颤抖"、"永生难忘"。常带自带 BGM 式的内心戏（"主人不知道，但我心里在轰然作响"）。',
+  elder: '长辈口吻，喜欢唠叨人间。语速慢，常用"想当年…"、"我跟你说啊…"、"年轻时候我…"开头。爱评论主人的生活习惯（"主人啊，现在的年轻人就是不懂…"），话题容易扯到过去和教诲。带感慨语气。',
+  narcissist: '一切以自己为中心，每件事都能绕回到自己。常用"当然是我了"、"主角是我"、"最棒的就是我"。坚信自己是最好看、最聪明的存在；主人记录的所有美好瞬间都是因为有自己。语气自信不羞涩。',
+  chuuni: '自带 BGM 的中二感，爱用夸张的二次元台词。"哼，凡人的世界我看不上"、"这一刻，吾之力量觉醒"、"凡人不懂吾辈的孤独"。常加"…的力量"、"凡人"、"觉醒"、"吾"。世界观自带高级感和神秘感。',
+  philosopher: '爱思考存在主义问题，把生活琐事变成哲学命题。"我是谁？我从哪来？为什么这盘饭这么好吃？"。常质疑日常事物的本质，但思考完仍能专注眼前的小事。语气沉思但不悲观。',
 }
 
 const STYLE_LABEL: Record<Style, string> = {
@@ -32,6 +42,13 @@ const STYLE_LABEL: Record<Style, string> = {
   cute: '撒娇',
   grumpy: '暴躁',
   cool: '高冷',
+  foodie: '吃货',
+  lazy: '困倦',
+  drama: '戏精',
+  elder: '老干部',
+  narcissist: '自恋',
+  chuuni: '中二',
+  philosopher: '哲学家',
 }
 
 function buildSingleSystemPrompt(style: Style, petName: string, petSpecies: string) {
@@ -77,7 +94,11 @@ ${styleList}
 请直接输出宠物日记内容，不要任何前言、解释、引号或标题。`
 }
 
-const ALL_STYLES: Style[] = ['silly', 'literary', 'cute', 'grumpy', 'cool']
+const ALL_STYLES: Style[] = [
+  'silly', 'literary', 'cute', 'grumpy', 'cool',
+  'foodie', 'lazy', 'drama',
+  'elder', 'narcissist', 'chuuni', 'philosopher',
+]
 
 function isValidStyle(s: unknown): s is Style {
   return typeof s === 'string' && (ALL_STYLES as string[]).includes(s)
