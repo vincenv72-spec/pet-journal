@@ -3,11 +3,131 @@ import { motion } from 'framer-motion'
 import type { Entry } from '../lib/supabase'
 import { TAG_PRESETS } from '../lib/supabase'
 
+// 5 套分享卡视觉主题，每次打开 ShareCard 随机抽一套（策略 B），让分享出的图更有惊喜感
+type DecorationItem = {
+  emoji: string
+  x: string  // CSS left, percentage or px
+  y: string  // CSS top
+  size: number
+  rotate: number
+  opacity: number
+}
+
+type ShareCardTheme = {
+  id: string
+  background: string
+  tapeBg: string
+  topDecorations: DecorationItem[]  // 无照片时显示在卡片顶部区域
+  cornerTopRight: string
+  cornerBottomLeft: string
+  accentColor: string  // 给装饰底色 / 投影使用
+}
+
+const SHARE_CARD_THEMES: ShareCardTheme[] = [
+  {
+    id: 'spring',
+    background: `
+      radial-gradient(circle at 20% 15%, rgba(255, 220, 175, 0.55), transparent 55%),
+      radial-gradient(circle at 80% 85%, rgba(255, 200, 200, 0.40), transparent 55%),
+      linear-gradient(180deg, #FCF6E6 0%, #FFE8E8 100%)
+    `,
+    tapeBg: 'linear-gradient(180deg, rgba(245, 181, 181, 0.85), rgba(217, 121, 121, 0.75))',
+    topDecorations: [
+      { emoji: '🌸', x: '14%', y: '20px', size: 40, rotate: -15, opacity: 0.9 },
+      { emoji: '🌷', x: '68%', y: '40px', size: 30, rotate: 12, opacity: 0.8 },
+      { emoji: '🌼', x: '40%', y: '70px', size: 34, rotate: -8, opacity: 0.75 },
+      { emoji: '🦋', x: '82%', y: '110px', size: 26, rotate: 20, opacity: 0.7 },
+      { emoji: '🌿', x: '8%', y: '120px', size: 24, rotate: -30, opacity: 0.6 },
+    ],
+    cornerTopRight: '🌸',
+    cornerBottomLeft: '🌷',
+    accentColor: '#E89B9B',
+  },
+  {
+    id: 'moonlit',
+    background: `
+      radial-gradient(circle at 75% 25%, rgba(255, 240, 200, 0.50), transparent 55%),
+      radial-gradient(circle at 25% 80%, rgba(180, 195, 220, 0.40), transparent 55%),
+      linear-gradient(180deg, #F4F4EC 0%, #D8DDE6 100%)
+    `,
+    tapeBg: 'linear-gradient(180deg, rgba(160, 175, 195, 0.85), rgba(115, 130, 150, 0.75))',
+    topDecorations: [
+      { emoji: '🌙', x: '70%', y: '30px', size: 48, rotate: -10, opacity: 0.85 },
+      { emoji: '⭐', x: '20%', y: '40px', size: 22, rotate: 0, opacity: 0.8 },
+      { emoji: '✨', x: '50%', y: '15px', size: 26, rotate: 15, opacity: 0.7 },
+      { emoji: '⭐', x: '88%', y: '90px', size: 16, rotate: 0, opacity: 0.7 },
+      { emoji: '✨', x: '10%', y: '105px', size: 20, rotate: -20, opacity: 0.65 },
+    ],
+    cornerTopRight: '🌙',
+    cornerBottomLeft: '⭐',
+    accentColor: '#8A99AA',
+  },
+  {
+    id: 'forest',
+    background: `
+      radial-gradient(circle at 20% 15%, rgba(255, 232, 190, 0.55), transparent 55%),
+      radial-gradient(circle at 80% 85%, rgba(180, 210, 165, 0.45), transparent 55%),
+      linear-gradient(180deg, #FCF6E6 0%, #DDE8D2 100%)
+    `,
+    tapeBg: 'linear-gradient(180deg, rgba(120, 150, 100, 0.85), rgba(90, 124, 90, 0.75))',
+    topDecorations: [
+      { emoji: '🍃', x: '15%', y: '25px', size: 36, rotate: -20, opacity: 0.85 },
+      { emoji: '🌿', x: '75%', y: '35px', size: 32, rotate: 15, opacity: 0.85 },
+      { emoji: '🌳', x: '45%', y: '70px', size: 38, rotate: -5, opacity: 0.7 },
+      { emoji: '🦋', x: '85%', y: '110px', size: 24, rotate: 25, opacity: 0.7 },
+      { emoji: '🍂', x: '8%', y: '115px', size: 22, rotate: -30, opacity: 0.65 },
+    ],
+    cornerTopRight: '🍃',
+    cornerBottomLeft: '🌿',
+    accentColor: '#5A7C5A',
+  },
+  {
+    id: 'honey',
+    background: `
+      radial-gradient(circle at 25% 20%, rgba(255, 220, 160, 0.60), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(255, 210, 140, 0.45), transparent 55%),
+      linear-gradient(180deg, #FCF6E6 0%, #FFE5B4 100%)
+    `,
+    tapeBg: 'linear-gradient(180deg, rgba(232, 197, 142, 0.85), rgba(217, 165, 91, 0.75))',
+    topDecorations: [
+      { emoji: '🍯', x: '40%', y: '30px', size: 44, rotate: -8, opacity: 0.9 },
+      { emoji: '🌻', x: '15%', y: '50px', size: 32, rotate: 12, opacity: 0.85 },
+      { emoji: '🐝', x: '75%', y: '35px', size: 28, rotate: -15, opacity: 0.8 },
+      { emoji: '✨', x: '60%', y: '105px', size: 20, rotate: 0, opacity: 0.65 },
+      { emoji: '🌼', x: '85%', y: '100px', size: 24, rotate: 20, opacity: 0.7 },
+    ],
+    cornerTopRight: '🍯',
+    cornerBottomLeft: '🌻',
+    accentColor: '#D9A55B',
+  },
+  {
+    id: 'feather',
+    background: `
+      radial-gradient(circle at 20% 15%, rgba(255, 220, 200, 0.55), transparent 55%),
+      radial-gradient(circle at 80% 85%, rgba(225, 195, 195, 0.40), transparent 55%),
+      linear-gradient(180deg, #FCF6E6 0%, #E8DDDD 100%)
+    `,
+    tapeBg: 'linear-gradient(180deg, rgba(201, 123, 123, 0.85), rgba(170, 100, 100, 0.75))',
+    topDecorations: [
+      { emoji: '🪶', x: '20%', y: '20px', size: 42, rotate: -25, opacity: 0.85 },
+      { emoji: '🪶', x: '70%', y: '50px', size: 36, rotate: 20, opacity: 0.75 },
+      { emoji: '🦋', x: '45%', y: '90px', size: 28, rotate: -10, opacity: 0.7 },
+      { emoji: '🌸', x: '85%', y: '100px', size: 22, rotate: 15, opacity: 0.65 },
+      { emoji: '✨', x: '10%', y: '110px', size: 18, rotate: 0, opacity: 0.6 },
+    ],
+    cornerTopRight: '🪶',
+    cornerBottomLeft: '🦋',
+    accentColor: '#C97B7B',
+  },
+]
+
 /** 单篇手帐的可分享卡片（生成 1080x1440 PNG） */
 export default function ShareCard({ entry, petName, onClose }: { entry: Entry; petName: string | null; onClose: () => void }) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [saving, setSaving] = useState(false)
   const [copied, setCopied] = useState(false)
+  // 每次打开 ShareCard 抽一套随机主题（策略 B —— 每次惊喜）
+  const [theme] = useState<ShareCardTheme>(() => SHARE_CARD_THEMES[Math.floor(Math.random() * SHARE_CARD_THEMES.length)])
 
   async function saveImage() {
     if (!cardRef.current) return
@@ -79,21 +199,17 @@ export default function ShareCard({ entry, petName, onClose }: { entry: Entry; p
         className="relative shadow-2xl"
         style={{
           width: 360, height: 480,
-          background: `
-            radial-gradient(circle at 20% 15%, rgba(255, 220, 175, 0.55), transparent 55%),
-            radial-gradient(circle at 80% 85%, rgba(200, 220, 175, 0.45), transparent 55%),
-            linear-gradient(180deg, #FCF6E6 0%, #F4EBD6 100%)
-          `,
+          background: theme.background,
           borderRadius: 16,
           overflow: 'hidden',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 顶部胶带 */}
+        {/* 顶部胶带（主题色） */}
         <div
           style={{
             position: 'absolute', top: -4, left: 30, width: 70, height: 18,
-            background: 'linear-gradient(180deg, rgba(232,197,142,0.85), rgba(217,165,91,0.75))',
+            background: theme.tapeBg,
             transform: 'rotate(-3deg)',
             borderRadius: 2,
           }}
@@ -110,8 +226,30 @@ export default function ShareCard({ entry, petName, onClose }: { entry: Entry; p
             />
           </div>
         ) : (
-          <div style={{ padding: '60px 24px 0', textAlign: 'center' }}>
-            <span style={{ fontSize: 80 }}>{entry.mood ?? '🐾'}</span>
+          // 无照片：用主题装饰 emoji 散布替代之前的"大脚印"占位
+          <div style={{ position: 'relative', height: 200, padding: '20px 24px 0' }}>
+            {/* 散布的装饰 emoji（主题决定） */}
+            {theme.topDecorations.map((d, i) => (
+              <span
+                key={i}
+                style={{
+                  position: 'absolute',
+                  left: d.x,
+                  top: d.y,
+                  fontSize: d.size,
+                  transform: `rotate(${d.rotate}deg)`,
+                  opacity: d.opacity,
+                  filter: 'drop-shadow(0 2px 3px rgba(120, 90, 60, 0.10))',
+                  pointerEvents: 'none',
+                }}
+              >
+                {d.emoji}
+              </span>
+            ))}
+            {/* 中心 mood emoji 较小，保持次重点 */}
+            <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center' }}>
+              <span style={{ fontSize: 42, opacity: 0.95 }}>{entry.mood ?? '🐾'}</span>
+            </div>
           </div>
         )}
 
@@ -194,9 +332,9 @@ export default function ShareCard({ entry, petName, onClose }: { entry: Entry; p
           来自 宠物手帐 · pet journal
         </div>
 
-        {/* 角装饰 */}
-        <span style={{ position: 'absolute', top: 60, right: 16, fontSize: 18, opacity: 0.6 }}>🌿</span>
-        <span style={{ position: 'absolute', bottom: 50, left: 16, fontSize: 14, opacity: 0.5 }}>✿</span>
+        {/* 角装饰（主题决定） */}
+        <span style={{ position: 'absolute', top: 60, right: 16, fontSize: 18, opacity: 0.65 }}>{theme.cornerTopRight}</span>
+        <span style={{ position: 'absolute', bottom: 50, left: 16, fontSize: 14, opacity: 0.55 }}>{theme.cornerBottomLeft}</span>
       </motion.div>
 
       {/* 操作按钮 */}
