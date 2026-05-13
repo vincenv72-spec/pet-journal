@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { supabase, type Pet, type Entry, SPECIES_EMOJI } from '../lib/supabase'
+import { supabase, type Pet, type Entry } from '../lib/supabase'
 import PhotoBackground from '../components/PhotoBackground'
+import SpeciesIcon from '../components/SpeciesIcon'
 
 export default function YearReviewPage() {
   const { id } = useParams()
@@ -124,12 +125,12 @@ export default function YearReviewPage() {
               </h1>
               <div className="flex items-center gap-4 mt-4">
                 <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-3xl shrink-0"
-                  style={{ background: 'rgba(255, 232, 200, 0.7)' }}
+                  className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: 'rgba(255, 232, 200, 0.7)', color: 'var(--color-forest-deep)' }}
                 >
                   {pet.avatar_url
                     ? <img src={pet.avatar_url} className="w-full h-full rounded-full object-cover" alt="" />
-                    : <span>{SPECIES_EMOJI[pet.species]}</span>
+                    : <SpeciesIcon species={pet.species} size={36} />
                   }
                 </div>
                 <p className="handwrite text-xl" style={{ color: 'var(--color-ink-soft)' }}>

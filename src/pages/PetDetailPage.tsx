@@ -7,6 +7,7 @@ import PhotoBackground from '../components/PhotoBackground'
 import InviteModal from '../components/InviteModal'
 import MemorialMark from '../components/MemorialMark'
 import PovBubble from '../components/PovBubble'
+import SpeciesIcon from '../components/SpeciesIcon'
 
 type Tab = 'journal' | 'album' | 'mood'
 
@@ -87,13 +88,17 @@ export default function PetDetailPage() {
           }}
         >
           <div
-            className="w-24 h-24 rounded-full flex items-center justify-center text-5xl shrink-0"
-            style={{ background: 'rgba(255, 232, 200, 0.7)', border: '2px solid rgba(255,255,255,0.6)' }}
+            className="w-24 h-24 rounded-full flex items-center justify-center shrink-0"
+            style={{
+              background: 'rgba(255, 232, 200, 0.7)',
+              border: '2px solid rgba(255,255,255,0.6)',
+              color: 'var(--color-forest-deep)',
+            }}
           >
             {pet.avatar_url ? (
               <img src={pet.avatar_url} className="w-full h-full rounded-full object-cover" alt={pet.name} />
             ) : (
-              <span>{SPECIES_EMOJI[pet.species]}</span>
+              <SpeciesIcon species={pet.species} size={56} />
             )}
           </div>
           <div className="flex-1 min-w-0">

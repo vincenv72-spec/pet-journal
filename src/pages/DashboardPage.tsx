@@ -8,6 +8,7 @@ import ShareCard from '../components/ShareCard'
 import ThemePicker from '../components/ThemePicker'
 import PovBubble from '../components/PovBubble'
 import MemorialAnniversaryCard, { getMemorialAnniversariesToShow } from '../components/MemorialAnniversaryCard'
+import SpeciesIcon from '../components/SpeciesIcon'
 
 export default function DashboardPage() {
   const { session } = useAuth()
@@ -140,13 +141,13 @@ export default function DashboardPage() {
                   }}
                 >
                   <div
-                    className="w-11 h-11 rounded-full flex items-center justify-center text-2xl shrink-0"
-                    style={{ background: 'rgba(255, 232, 200, 0.7)' }}
+                    className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: 'rgba(255, 232, 200, 0.7)', color: 'var(--color-forest-deep)' }}
                   >
                     {p.avatar_url ? (
                       <img src={p.avatar_url} className="w-full h-full rounded-full object-cover" alt="" />
                     ) : (
-                      <span>{SPECIES_EMOJI[p.species]}</span>
+                      <SpeciesIcon species={p.species} size={26} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

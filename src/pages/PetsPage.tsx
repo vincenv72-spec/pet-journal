@@ -189,13 +189,17 @@ function PetCard({ pet, index, onEdit, onDelete }: { pet: Pet; index: number; on
     >
       <div className="flex items-center gap-4 mb-4">
         <div
-          className="w-16 h-16 rounded-full flex items-center justify-center text-3xl shrink-0"
-          style={{ background: 'rgba(255, 232, 200, 0.6)', border: '1px solid rgba(255,255,255,0.5)' }}
+          className="w-16 h-16 rounded-full flex items-center justify-center shrink-0"
+          style={{
+            background: 'rgba(255, 232, 200, 0.6)',
+            border: '1px solid rgba(255,255,255,0.5)',
+            color: 'var(--color-forest-deep)',
+          }}
         >
           {pet.avatar_url ? (
             <img src={pet.avatar_url} className="w-full h-full rounded-full object-cover" alt={pet.name} />
           ) : (
-            <span>{SPECIES_EMOJI[pet.species]}</span>
+            <SpeciesIcon species={pet.species} size={36} />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -325,14 +329,18 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
           {/* 头像 */}
           <div className="flex items-center gap-4">
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-4xl shrink-0 cursor-pointer"
-              style={{ background: 'rgba(255, 232, 200, 0.7)', border: '2px dashed rgba(122,106,92,0.3)' }}
+              className="w-20 h-20 rounded-full flex items-center justify-center shrink-0 cursor-pointer"
+              style={{
+                background: 'rgba(255, 232, 200, 0.7)',
+                border: '2px dashed rgba(122,106,92,0.3)',
+                color: 'var(--color-forest-deep)',
+              }}
               onClick={() => document.getElementById('avatar-input')?.click()}
             >
               {avatarUrl ? (
                 <img src={avatarUrl} className="w-full h-full rounded-full object-cover" alt="" />
               ) : (
-                <span>{SPECIES_EMOJI[species]}</span>
+                <SpeciesIcon species={species} size={44} />
               )}
             </div>
             <div className="flex-1">
