@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { supabase, type Entry, type Pet, type PetPovStyle, SPECIES_EMOJI, SPECIES_CN, TAG_PRESETS } from '../lib/supabase'
+import { supabase, type Entry, type Pet, SPECIES_EMOJI, SPECIES_CN, TAG_PRESETS, POV_FALLBACK_TEXT } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
-import PetPovGenerator from '../components/PetPovGenerator'
 
 const MOODS = ['🐾', '😺', '🐶', '😴', '🥰', '😋', '🥺', '🤔', '🎉', '💖']
 
@@ -24,10 +23,8 @@ export default function EditorPage() {
   const [tags, setTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState('')
   const [pets, setPets] = useState<Pet[]>([])
-  const [povText, setPovText] = useState<string | null>(null)
-  const [povStyle, setPovStyle] = useState<PetPovStyle | null>(null)
-  const [povGeneratedAt, setPovGeneratedAt] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveStage, setSaveStage] = useState<'idle' | 'saving' | 'thinking'>('idle')
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(!isNew)
   const [error, setError] = useState<string | null>(null)
@@ -54,9 +51,6 @@ export default function EditorPage() {
         setEntryDate(e.entry_date)
         setPhotoUrl(e.photo_url)
         setTags(e.tags ?? [])
-        setPovText(e.pet_pov_text)
-        setPovStyle(e.pet_pov_style)
-        setPovGeneratedAt(e.pet_pov_generated_at)
       }
       setLoading(false)
     })
@@ -89,32 +83,96 @@ export default function EditorPage() {
     if (!session) return
     setSaving(true)
     setError(null)
+    setSaveStage('saving')
     try {
-      const selectedPet = pets.find((p) => p.id === petId)
-      const payload = {
+      // 主动从 DB 拿 pet —— 避免 pets state 还在异步加载时的 race condition
+      // (从 PetDetailPage 点"+新一篇"进入时，URL 带 ?pet=xxx，petId 立刻有值，但 pets state 可能没回来)
+      let petForPov: Pet | null = pets.find((p) => p.id === petId) ?? null
+      if (!petForPov && petId) {
+        const { data } = await supabase.from('pets').select('*').eq('id', petId).single()
+        if (data) petForPov = data as Pet
+      }
+
+      const basePayload = {
         user_id: session.user.id,
         title: title.trim(),
         content,
         mood,
         pet_id: petId,
-        pet_name: selectedPet?.name ?? null,
+        pet_name: petForPov?.name ?? null,
         entry_date: entryDate,
         photo_url: photoUrl,
         tags,
-        pet_pov_text: povText,
-        pet_pov_style: povStyle,
-        pet_pov_generated_at: povGeneratedAt,
       }
+
+      let savedEntryId: string | undefined = id
       if (isNew) {
-        const { error } = await supabase.from('entries').insert(payload)
+        const { data, error } = await supabase
+          .from('entries')
+          .insert(basePayload)
+          .select('id')
+          .single()
         if (error) throw error
+        savedEntryId = data?.id
       } else {
-        const { error } = await supabase.from('entries').update(payload).eq('id', id!)
+        const { error } = await supabase.from('entries').update(basePayload).eq('id', id!)
         if (error) throw error
       }
+
+      // 异步生成 POV：仅新 entry + 选了带性格池的宠物 + 正文≥5 字
+      if (
+        isNew &&
+        savedEntryId &&
+        petForPov?.pov_styles &&
+        petForPov.pov_styles.length > 0 &&
+        content.trim().length >= 5
+      ) {
+        setSaveStage('thinking')
+        const pool = petForPov.pov_styles
+        const chosenStyle = pool[Math.floor(Math.random() * pool.length)]
+        let povText: string | null = null
+        let usedStyle = chosenStyle
+        try {
+          const { data, error: invokeErr } = await supabase.functions.invoke('pet-pov', {
+            body: {
+              content: content.trim(),
+              style: chosenStyle,
+              pet_name: petForPov.name,
+              pet_species: SPECIES_CN[petForPov.species],
+            },
+          })
+          if (invokeErr) throw new Error(invokeErr.message)
+          const returned: string | undefined = data?.pov_text
+          if (!returned || returned.trim().length === 0) {
+            throw new Error(`empty pov: ${JSON.stringify(data)}`)
+          }
+          povText = returned
+        } catch (povErr) {
+          console.warn('[pet-pov] 生成失败，回落到撒娇文案:', povErr)
+          povText = POV_FALLBACK_TEXT
+          usedStyle = 'cute' // fallback 文案是撒娇语气，emoji 也走 🍯 保持调性一致
+        }
+
+        // 写回 entry —— 不管真 POV 还是 fallback，都要让用户看到回应
+        try {
+          await supabase
+            .from('entries')
+            .update({
+              pet_pov_text: povText,
+              pet_pov_style: usedStyle,
+              pet_pov_generated_at: new Date().toISOString(),
+            })
+            .eq('id', savedEntryId)
+        } catch (writeErr) {
+          console.error('[pet-pov] 写入 entry 失败:', writeErr)
+          // 不重新抛出 —— 不能因为 POV 写入失败就阻断用户保存流程
+        }
+      }
+
       navigate('/dashboard')
     } catch (err: any) {
       setError(err.message ?? '保存失败')
+      setSaveStage('idle')
     } finally {
       setSaving(false)
     }
@@ -290,35 +348,73 @@ export default function EditorPage() {
             />
           </div>
 
-          {/* 宠物视角（AI 翻译） */}
-          <PetPovGenerator
-            content={content}
-            petName={pets.find((p) => p.id === petId)?.name ?? null}
-            petSpecies={
-              (() => {
-                const p = pets.find((p) => p.id === petId)
-                return p ? SPECIES_CN[p.species] : null
-              })()
+          {/* POV 提示（3 态：让用户保存前就知道这一篇会不会有 POV） */}
+          {(() => {
+            const selectedPet = pets.find((p) => p.id === petId)
+
+            // 态 A：选了宠物 + 已有性格池 → 会生成 POV
+            if (selectedPet?.pov_styles && selectedPet.pov_styles.length > 0) {
+              return (
+                <div
+                  className="rounded-xl px-4 py-3 mt-2"
+                  style={{
+                    background: 'rgba(232, 236, 228, 0.55)',
+                    border: '1px dashed rgba(90, 124, 94, 0.30)',
+                  }}
+                >
+                  <p className="text-xs" style={{ color: 'var(--color-ink-soft)' }}>
+                    ✨ 保存后，{selectedPet.name} 会用它自己的语气也写一段
+                  </p>
+                </div>
+              )
             }
-            povText={povText}
-            povStyle={povStyle}
-            onGenerated={(text, style) => {
-              setPovText(text)
-              setPovStyle(style)
-              setPovGeneratedAt(new Date().toISOString())
-            }}
-            onClear={() => {
-              setPovText(null)
-              setPovStyle(null)
-              setPovGeneratedAt(null)
-            }}
-          />
+
+            // 态 B：选了宠物但宠物没设性格池 → 引导去毛孩子页设置
+            if (selectedPet) {
+              return (
+                <div
+                  className="rounded-xl px-4 py-3 mt-2"
+                  style={{
+                    background: 'rgba(255, 232, 200, 0.45)',
+                    border: '1px dashed rgba(217, 165, 91, 0.45)',
+                  }}
+                >
+                  <p className="text-xs" style={{ color: 'var(--color-ink-soft)' }}>
+                    ℹ️ {selectedPet.name} 还没设性格，
+                    <Link to="/pets" className="underline mx-0.5" style={{ color: 'var(--color-honey)' }}>
+                      去给它选 1-3 个
+                    </Link>
+                    之后就能听到它说话啦
+                  </p>
+                </div>
+              )
+            }
+
+            // 态 C：未选宠物 → 明确告知"这一篇不会有 POV"
+            return (
+              <div
+                className="rounded-xl px-4 py-3 mt-2"
+                style={{
+                  background: 'rgba(245, 240, 220, 0.4)',
+                  border: '1px dashed rgba(122, 106, 92, 0.22)',
+                }}
+              >
+                <p className="text-xs" style={{ color: 'var(--color-ink-soft)' }}>
+                  ℹ️ 没指定毛孩子，这一篇不会有 POV —— 在上方「毛孩子」下拉框选一只就行
+                </p>
+              </div>
+            )
+          })()}
 
           {error && <p className="text-sm" style={{ color: 'var(--color-rose)' }}>{error}</p>}
 
           <div className="flex gap-3 pt-2">
             <button onClick={handleSave} disabled={saving} className="btn-primary">
-              {saving ? '保存中...' : '保存这一页'}
+              {saveStage === 'thinking'
+                ? `${pets.find((p) => p.id === petId)?.name ?? '它'} 正在想…`
+                : saveStage === 'saving'
+                ? '保存中…'
+                : '保存这一页'}
             </button>
             <Link to="/dashboard" className="btn-ghost">取消</Link>
           </div>

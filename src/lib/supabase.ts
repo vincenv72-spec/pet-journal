@@ -64,8 +64,17 @@ export type Pet = {
   note: string | null
   passed_away_at: string | null
   memorial_note: string | null
+  pov_styles: PetPovStyle[] | null
   created_at: string
   updated_at: string
+}
+
+// POV fallback 文案（DeepSeek 失败时静默写入，统一撒娇语气）
+export const POV_FALLBACK_TEXT = '主人主人～我刚刚走神了一下下，等等再问我啦'
+
+export function getPovStyleMeta(style: PetPovStyle | null | undefined) {
+  if (!style) return null
+  return PET_POV_STYLES.find((s) => s.id === style) ?? null
 }
 
 export function isMemorial(pet: Pet | null | undefined): boolean {

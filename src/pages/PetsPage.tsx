@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase, type Pet, type Species, SPECIES_LABEL, SPECIES_EMOJI, BREED_PRESETS } from '../lib/supabase'
+import { supabase, type Pet, type Species, type PetPovStyle, SPECIES_LABEL, SPECIES_EMOJI, BREED_PRESETS, PET_POV_STYLES } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
+import SpeciesIcon from '../components/SpeciesIcon'
+
+// 用于种类选择按钮显示（不含 emoji，emoji 用 SpeciesIcon SVG）
+const SPECIES_NAME_PLAIN: Record<Species, string> = {
+  cat: '猫', dog: '狗', rabbit: '兔', bird: '鸟', hamster: '仓鼠', fish: '鱼', other: '其他',
+}
 
 export default function PetsPage() {
   const { session } = useAuth()
@@ -225,9 +231,18 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
   const [birthDate, setBirthDate] = useState(pet?.birth_date ?? '')
   const [note, setNote] = useState(pet?.note ?? '')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(pet?.avatar_url ?? null)
+  const [povStyles, setPovStyles] = useState<PetPovStyle[]>(pet?.pov_styles ?? [])
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  function togglePovStyle(s: PetPovStyle) {
+    if (povStyles.includes(s)) {
+      setPovStyles(povStyles.filter((x) => x !== s))
+    } else if (povStyles.length < 3) {
+      setPovStyles([...povStyles, s])
+    }
+  }
 
   async function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -252,6 +267,10 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
       setError('给毛孩子起个名字吧')
       return
     }
+    if (povStyles.length === 0) {
+      setError(`选 1-3 种性格，让 ${name.trim() || '它'} 拥有自己的说话方式`)
+      return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -263,6 +282,7 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
         birth_date: birthDate || null,
         note: note.trim() || null,
         avatar_url: avatarUrl,
+        pov_styles: povStyles,
       }
       if (pet) {
         const { error } = await supabase.from('pets').update(payload).eq('id', pet.id)
@@ -338,19 +358,24 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
           <div>
             <label className="block mb-2 text-sm">种类</label>
             <div className="flex flex-wrap gap-2">
-              {(Object.keys(SPECIES_LABEL) as Species[]).map((s) => (
-                <button
-                  key={s} type="button"
-                  onClick={() => { setSpecies(s); setBreed('') }}
-                  className="px-3 py-2 rounded-xl text-sm transition"
-                  style={{
-                    background: species === s ? 'var(--color-tape)' : 'rgba(255,255,255,0.4)',
-                    border: '1px solid ' + (species === s ? 'var(--color-forest)' : 'rgba(122,106,92,0.18)'),
-                  }}
-                >
-                  {SPECIES_LABEL[s]}
-                </button>
-              ))}
+              {(Object.keys(SPECIES_LABEL) as Species[]).map((s) => {
+                const active = species === s
+                return (
+                  <button
+                    key={s} type="button"
+                    onClick={() => { setSpecies(s); setBreed('') }}
+                    className="px-3 py-2 rounded-xl text-sm transition flex items-center gap-1.5"
+                    style={{
+                      background: active ? 'var(--color-tape)' : 'rgba(255,255,255,0.4)',
+                      border: '1px solid ' + (active ? 'var(--color-forest)' : 'rgba(122,106,92,0.18)'),
+                      color: active ? 'var(--color-forest-deep)' : 'var(--color-ink-soft)',
+                    }}
+                  >
+                    <SpeciesIcon species={s} size={20} />
+                    <span>{SPECIES_NAME_PLAIN[s]}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -394,6 +419,47 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
           <div>
             <label className="block mb-1 text-sm">一句话介绍（可选）</label>
             <input className="input" value={note} onChange={(e) => setNote(e.target.value)} placeholder="爱睡懒觉的小机灵" maxLength={50} />
+          </div>
+
+          {/* 性格池 —— 决定 POV 的说话方式 */}
+          <div className="pt-2">
+            <label className="block mb-1 text-sm">
+              {name.trim() || '它'} 是怎样的小家伙？*
+              <span className="text-xs ml-2 opacity-60">选 1-3 种性格</span>
+            </label>
+            <p className="text-xs mb-3" style={{ color: 'var(--color-ink-soft)' }}>
+              之后{name.trim() || '它'}会用这些语气在手帐里和你搭话
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {PET_POV_STYLES.map((s) => {
+                const active = povStyles.includes(s.id)
+                const limitReached = povStyles.length >= 3 && !active
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => togglePovStyle(s.id)}
+                    disabled={limitReached}
+                    title={s.description}
+                    className="px-3 py-1.5 rounded-full text-sm transition flex items-center gap-1.5"
+                    style={{
+                      background: active ? 'var(--color-forest)' : 'rgba(255,255,255,0.4)',
+                      color: active ? 'white' : 'var(--color-ink-soft)',
+                      border: '1px solid ' + (active ? 'var(--color-forest)' : 'rgba(122,106,92,0.18)'),
+                      opacity: limitReached ? 0.4 : 1,
+                      cursor: limitReached ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {s.emoji} {s.label}
+                  </button>
+                )
+              })}
+            </div>
+            {povStyles.length > 0 && (
+              <p className="text-xs mt-2" style={{ color: 'var(--color-ink-soft)' }}>
+                已选 {povStyles.length}/3 · 每篇手帐会随机抽一种语气
+              </p>
+            )}
           </div>
 
           {error && <p className="text-sm" style={{ color: 'var(--color-rose)' }}>{error}</p>}
