@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { supabase, type Pet, isMemorial, daysBetween } from '../lib/supabase'
 
@@ -139,6 +140,31 @@ export default function MemorialMark({ pet, onUpdate }: Props) {
               "{pet.memorial_note}"
             </p>
           )}
+
+          {/* 一生长卷入口 */}
+          <Link
+            to={`/pets/${pet.id}/lifelong`}
+            className="rounded-xl px-4 py-3.5 flex items-center justify-between mt-2 group transition"
+            style={{
+              background: 'rgba(232, 236, 228, 0.65)',
+              border: '1px solid rgba(90, 124, 94, 0.30)',
+            }}
+          >
+            <div>
+              <p className="text-sm" style={{ color: 'var(--color-ink)' }}>
+                📖 翻开 {pet.name} 的一生
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--color-ink-soft)' }}>
+                按时间顺序，从第一天到最后一天
+              </p>
+            </div>
+            <span
+              className="text-base group-hover:translate-x-1 transition-transform"
+              style={{ color: 'var(--color-forest)' }}
+            >
+              →
+            </span>
+          </Link>
 
           <div className="pt-3 border-t" style={{ borderColor: 'rgba(122,106,92,0.12)' }}>
             {!confirmingRevert ? (

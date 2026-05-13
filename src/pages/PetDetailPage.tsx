@@ -6,6 +6,7 @@ import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 import InviteModal from '../components/InviteModal'
 import MemorialMark from '../components/MemorialMark'
+import PovBubble from '../components/PovBubble'
 
 type Tab = 'journal' | 'album' | 'mood'
 
@@ -46,9 +47,14 @@ export default function PetDetailPage() {
     </div>
   )
 
+  const memorial = isMemorial(pet)
+
   return (
-    <div className="min-h-screen px-6 md:px-16 py-8 relative">
-      <PhotoBackground photo="dashboard" intensity={0.55} memorial={isMemorial(pet)} />
+    <div
+      className="min-h-screen px-6 md:px-16 py-8 relative"
+      data-memorial={memorial ? 'true' : undefined}
+    >
+      <PhotoBackground photo="dashboard" intensity={0.55} memorial={memorial} />
 
       <header className="flex items-center justify-between mb-8 relative z-10">
         <Link to="/" className="flex items-center gap-2 text-2xl handwrite font-bold">
@@ -69,6 +75,16 @@ export default function PetDetailPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="card-paper card-paper-tape !p-8 md:!p-10 mt-4 mb-6 flex items-center gap-6 flex-wrap"
+          style={{
+            transition: 'background 800ms ease-out, box-shadow 800ms ease-out',
+            ...(memorial
+              ? {
+                  background: 'rgba(247, 244, 232, 0.42)',
+                  boxShadow:
+                    '0 1px 0 rgba(255,255,255,0.4) inset, 0 4px 12px -6px rgba(80, 95, 75, 0.10), 0 18px 36px -18px rgba(80, 95, 75, 0.15)',
+                }
+              : {}),
+          }}
         >
           <div
             className="w-24 h-24 rounded-full flex items-center justify-center text-5xl shrink-0"
@@ -81,7 +97,16 @@ export default function PetDetailPage() {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-4xl mb-1">{pet.name}</h1>
+            <h1
+              className="text-4xl mb-1 flex items-center gap-2.5 flex-wrap"
+              style={{
+                letterSpacing: memorial ? '0.5px' : '0',
+                transition: 'letter-spacing 800ms ease-out',
+              }}
+            >
+              <span>{pet.name}</span>
+              {memorial && <MemorialIcons />}
+            </h1>
             <p style={{ color: 'var(--color-ink-soft)' }}>
               {pet.breed ? <>{SPECIES_EMOJI[pet.species]} {pet.breed}</> : SPECIES_LABEL[pet.species]}
               {pet.birth_date && <span> · 生日 {pet.birth_date} · {ageString(pet.birth_date)}</span>}
@@ -112,12 +137,12 @@ export default function PetDetailPage() {
         <AnimatePresence mode="wait">
           {tab === 'journal' && (
             <motion.div key="j" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <JournalTab entries={entries} />
+              <JournalTab entries={entries} memorial={memorial} pet={pet} />
             </motion.div>
           )}
           {tab === 'album' && (
             <motion.div key="a" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <AlbumTab entries={entries} />
+              <AlbumTab entries={entries} pet={pet} />
             </motion.div>
           )}
           {tab === 'mood' && (
@@ -161,7 +186,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
 // ========================================
 // Tab 1: 手帐
 // ========================================
-function JournalTab({ entries }: { entries: Entry[] }) {
+function JournalTab({ entries, memorial, pet }: { entries: Entry[]; memorial: boolean; pet: Pet }) {
   if (entries.length === 0) return <Empty msg="还没有手帐 · 写一篇吧" />
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -171,15 +196,38 @@ function JournalTab({ entries }: { entries: Entry[] }) {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.04 }}
           className="card-paper hover:-translate-y-1 transition-transform"
-          style={{ transform: `rotate(${(i % 3 - 1) * 0.6}deg)` }}
+          style={{
+            transform: `rotate(${(i % 3 - 1) * 0.6}deg)`,
+            transition: 'box-shadow 800ms ease-out, border-top-color 800ms ease-out',
+            ...(memorial
+              ? {
+                  boxShadow:
+                    '0 1px 0 rgba(255,255,255,0.4) inset, 0 4px 12px -6px rgba(80, 95, 75, 0.08)',
+                  borderTop: '1px solid rgba(140, 130, 115, 0.25)',
+                }
+              : {}),
+          }}
         >
           {e.photo_url && <img src={e.photo_url} className="w-full h-40 object-cover rounded-lg mb-3" alt="" />}
           <div className="flex items-center justify-between mb-2">
             <span className="text-2xl">{e.mood ?? '🐾'}</span>
-            <span className="text-xs" style={{ color: 'var(--color-ink-soft)' }}>{e.entry_date}</span>
+            <span
+              className="text-xs"
+              style={{
+                color: memorial ? 'rgba(80, 70, 60, 0.85)' : 'var(--color-ink-soft)',
+                transition: 'color 800ms ease-out',
+              }}
+            >
+              {e.entry_date}
+            </span>
           </div>
           <h3 className="text-2xl mb-2 line-clamp-1">{e.title}</h3>
           <p className="text-sm line-clamp-3 mb-3" style={{ color: 'var(--color-ink-soft)' }}>{e.content || '（空）'}</p>
+          {e.pet_pov_text && (
+            <div className="mb-3">
+              <PovBubble entry={e} petName={pet.name} pet={pet} variant="compact" />
+            </div>
+          )}
           <Link to={`/editor/${e.id}`} className="text-sm underline" style={{ color: 'var(--color-forest)' }}>编辑</Link>
         </motion.div>
       ))}
@@ -188,9 +236,50 @@ function JournalTab({ entries }: { entries: Entry[] }) {
 }
 
 // ========================================
+// 纪念馆图标组合：落叶 + 月亮 + 羽毛
+// ========================================
+function MemorialIcons() {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5"
+      style={{ color: '#5a7c5e' }}
+      aria-label="纪念"
+    >
+      {/* 落叶 */}
+      <svg
+        width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+      >
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96c.34 4.39.74 6.66 1.07 8.33 1.32 6.61-2.34 11.61-8.46 11.61"/>
+        <path d="M2 21c0-3 1.85-5.36 5.08-6"/>
+      </svg>
+      {/* 月亮 */}
+      <svg
+        width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+      >
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      {/* 羽毛 */}
+      <svg
+        width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+      >
+        <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/>
+        <line x1="16" y1="8" x2="2" y2="22"/>
+        <line x1="17.5" y1="15" x2="9" y2="15"/>
+      </svg>
+    </span>
+  )
+}
+
+// ========================================
 // Tab 2: 相册（Pinterest 瀑布流 + 月份分组）
 // ========================================
-function AlbumTab({ entries }: { entries: Entry[] }) {
+function AlbumTab({ entries, pet }: { entries: Entry[]; pet: Pet }) {
   const photos = entries.filter((e) => e.photo_url)
   const [lightbox, setLightbox] = useState<Entry | null>(null)
 
@@ -259,6 +348,11 @@ function AlbumTab({ entries }: { entries: Entry[] }) {
               </div>
               <h3 className="text-2xl mb-2">{lightbox.title}</h3>
               <p style={{ color: 'var(--color-ink-soft)' }}>{lightbox.content}</p>
+              {lightbox.pet_pov_text && (
+                <div className="mt-4">
+                  <PovBubble entry={lightbox} petName={pet.name} pet={pet} variant="full" />
+                </div>
+              )}
               <div className="flex gap-3 mt-4">
                 <Link to={`/editor/${lightbox.id}`} className="btn-ghost text-sm">编辑这一篇</Link>
                 <button onClick={() => setLightbox(null)} className="btn-ghost text-sm">关闭</button>

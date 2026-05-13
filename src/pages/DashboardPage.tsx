@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS } from '../lib/supabase'
+import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS, isMemorial } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 import ShareCard from '../components/ShareCard'
 import ThemePicker from '../components/ThemePicker'
+import PovBubble from '../components/PovBubble'
 
 export default function DashboardPage() {
   const { session } = useAuth()
@@ -88,6 +89,67 @@ export default function DashboardPage() {
         </div>
         <Link to="/editor/new" className="btn-primary">＋ 写新一篇</Link>
       </div>
+
+      {/* 永久长卷入口：横向卡片，每只宠物一张 */}
+      {pets.length > 0 && !loading && (
+        <section className="mb-6 relative z-10">
+          <p className="text-xs mb-2.5 tracking-wide" style={{ color: 'var(--color-ink-soft)' }}>
+            📖 翻看他们的一生
+          </p>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+            {pets.map((p) => {
+              const memorial = isMemorial(p)
+              return (
+                <Link
+                  key={p.id}
+                  to={`/pets/${p.id}/lifelong`}
+                  className="shrink-0 rounded-2xl px-4 py-3 flex items-center gap-3 transition hover:-translate-y-0.5 group"
+                  style={{
+                    minWidth: '210px',
+                    background: memorial
+                      ? 'rgba(232, 236, 228, 0.62)'
+                      : 'rgba(255, 248, 232, 0.55)',
+                    border: memorial
+                      ? '1px solid rgba(90, 124, 94, 0.30)'
+                      : '1px solid rgba(122, 106, 92, 0.18)',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  <div
+                    className="w-11 h-11 rounded-full flex items-center justify-center text-2xl shrink-0"
+                    style={{ background: 'rgba(255, 232, 200, 0.7)' }}
+                  >
+                    {p.avatar_url ? (
+                      <img src={p.avatar_url} className="w-full h-full rounded-full object-cover" alt="" />
+                    ) : (
+                      <span>{SPECIES_EMOJI[p.species]}</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold truncate">{p.name}</p>
+                      {memorial && (
+                        <svg
+                          width="12" height="12" viewBox="0 0 24 24" fill="none"
+                          stroke="#5a7c5e" strokeWidth="1.5"
+                          strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+                        >
+                          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19.2 2.96c.34 4.39.74 6.66 1.07 8.33 1.32 6.61-2.34 11.61-8.46 11.61"/>
+                          <path d="M2 21c0-3 1.85-5.36 5.08-6"/>
+                        </svg>
+                      )}
+                    </div>
+                    <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: 'var(--color-ink-soft)' }}>
+                      翻开一生
+                      <span className="group-hover:translate-x-0.5 transition-transform" style={{ color: 'var(--color-forest)' }}>→</span>
+                    </p>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* 宠物筛选 Tab 条 */}
       {pets.length > 0 && !loading && (
@@ -188,6 +250,16 @@ export default function DashboardPage() {
                       </span>
                     )
                   })}
+                </div>
+              )}
+              {entry.pet_pov_text && (
+                <div className="mb-3">
+                  <PovBubble
+                    entry={entry}
+                    petName={entry.pet_name}
+                    pet={pets.find((p) => p.id === entry.pet_id) ?? null}
+                    variant="compact"
+                  />
                 </div>
               )}
               <div className="flex gap-3 text-sm">

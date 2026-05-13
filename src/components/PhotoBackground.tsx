@@ -66,21 +66,23 @@ export default function PhotoBackground({ photo = 'hero', intensity = 1, memoria
           aria-hidden
           className="fixed inset-0 -z-15 pointer-events-none"
           style={{
-            background: 'rgba(47, 82, 51, 0.18)',
+            background: 'rgba(47, 82, 51, 0.24)',
             mixBlendMode: 'multiply',
             transition: 'background 0.8s ease',
           }}
         />
       )}
 
-      {/* Layer 5 — 滚动渐隐 */}
+      {/* Layer 5 — 滚动渐隐（memorial 时切到雾绿，呼应深绿色温） */}
       <div
         aria-hidden
         className="absolute inset-x-0 top-0 -z-10 pointer-events-none"
         style={{
           height: '220vh',
-          background:
-            'linear-gradient(180deg, transparent 0%, transparent 70vh, rgba(244, 240, 224, 0.50) 130vh, rgba(244, 240, 224, 0.92) 220vh)',
+          background: memorial
+            ? 'linear-gradient(180deg, transparent 0%, transparent 70vh, rgba(232, 236, 228, 0.55) 130vh, rgba(232, 236, 228, 0.95) 220vh)'
+            : 'linear-gradient(180deg, transparent 0%, transparent 70vh, rgba(244, 240, 224, 0.50) 130vh, rgba(244, 240, 224, 0.92) 220vh)',
+          transition: 'background 0.8s ease-out',
         }}
       />
     </>

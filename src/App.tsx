@@ -8,6 +8,7 @@ import EditorPage from './pages/EditorPage'
 import PetsPage from './pages/PetsPage'
 import PetDetailPage from './pages/PetDetailPage'
 import YearReviewPage from './pages/YearReviewPage'
+import LifelongScrollPage from './pages/LifelongScrollPage'
 import CursorTrail from './components/CursorTrail'
 import BottomNav from './components/BottomNav'
 
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/pets" element={<Protected><PetsPage /></Protected>} />
           <Route path="/pets/:id" element={<Protected><PetDetailPage /></Protected>} />
           <Route path="/pets/:id/year" element={<Protected><YearReviewPage /></Protected>} />
+          <Route path="/pets/:id/lifelong" element={<Protected><LifelongScrollPage /></Protected>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
