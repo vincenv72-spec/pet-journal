@@ -1,5 +1,4 @@
 import { type Entry, type Pet, getPovStyleMeta } from '../lib/supabase'
-import SpeciesIcon from './SpeciesIcon'
 
 type Variant = 'compact' | 'full'
 
@@ -10,7 +9,7 @@ interface Props {
   variant?: Variant
 }
 
-// 搭话气泡 —— 头像位置：上传了用真实头像 / 没上传用 SpeciesIcon 卡通图标；右下角始终带性格 emoji 角标
+// 搭话气泡 —— 左侧：上传了头像就显示真实头像+性格角标；没上传就只显示一个性格 emoji 圈（不用物种 emoji 兜底）
 export default function PovBubble({ entry, petName, pet, variant = 'full' }: Props) {
   if (!entry.pet_pov_text) return null
   const meta = getPovStyleMeta(entry.pet_pov_style)
@@ -23,35 +22,43 @@ export default function PovBubble({ entry, petName, pet, variant = 'full' }: Pro
 
   return (
     <div className="flex gap-2.5 items-start">
-      {/* 左侧：头像（真实图 or SpeciesIcon 卡通图标）+ 右下角性格 emoji 角标 */}
-      <div className="relative shrink-0 mt-1">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-          style={{
-            background: 'rgba(255, 232, 200, 0.7)',
-            border: '1.5px solid rgba(255,255,255,0.7)',
-            color: 'var(--color-forest-deep)',
-          }}
-        >
-          {avatarUrl ? (
+      {/* 左侧：上传头像 → 头像+性格角标；没头像 → 只显性格 emoji 圈 */}
+      {avatarUrl ? (
+        <div className="relative shrink-0 mt-1">
+          <div
+            className="w-10 h-10 rounded-full overflow-hidden"
+            style={{
+              background: 'rgba(255, 232, 200, 0.7)',
+              border: '1.5px solid rgba(255,255,255,0.7)',
+            }}
+          >
             <img src={avatarUrl} className="w-full h-full rounded-full object-cover" alt="" />
-          ) : (
-            <SpeciesIcon species={pet?.species ?? 'other'} size={22} />
-          )}
+          </div>
+          <span
+            className="absolute -right-1 -bottom-1 w-5 h-5 rounded-full flex items-center justify-center text-[11px]"
+            style={{
+              background: 'white',
+              border: '1px solid rgba(122, 106, 92, 0.22)',
+              boxShadow: '0 1px 2px rgba(120, 90, 60, 0.10)',
+            }}
+            aria-label={meta?.label}
+          >
+            {styleEmoji}
+          </span>
         </div>
-        {/* 性格 emoji 角标（右下角小白圆） */}
-        <span
-          className="absolute -right-1 -bottom-1 w-5 h-5 rounded-full flex items-center justify-center text-[11px]"
+      ) : (
+        <div
+          className="shrink-0 mt-1 w-10 h-10 rounded-full flex items-center justify-center text-lg"
           style={{
-            background: 'white',
-            border: '1px solid rgba(122, 106, 92, 0.22)',
-            boxShadow: '0 1px 2px rgba(120, 90, 60, 0.10)',
+            background: 'rgba(232, 236, 228, 0.65)',
+            border: '1.5px solid rgba(90, 124, 94, 0.25)',
           }}
           aria-label={meta?.label}
+          title={meta?.label}
         >
           {styleEmoji}
-        </span>
-      </div>
+        </div>
+      )}
 
       {/* 右侧：对话气泡（带左侧尾巴指向头像） */}
       <div className="relative flex-1 min-w-0">
@@ -82,7 +89,7 @@ export default function PovBubble({ entry, petName, pet, variant = 'full' }: Pro
           <p
             className={
               variant === 'compact'
-                ? 'handwrite text-sm leading-snug line-clamp-2'
+                ? 'handwrite text-sm leading-snug line-clamp-3'
                 : 'handwrite text-base leading-relaxed whitespace-pre-wrap'
             }
             style={{ color: 'var(--color-forest-deep)' }}
