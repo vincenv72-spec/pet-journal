@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { supabase, type Entry, type Pet, SPECIES_EMOJI, SPECIES_CN, TAG_PRESETS, POV_FALLBACK_TEXT } from '../lib/supabase'
+import { supabase, type Entry, type Pet, type PetPovStyle, type EntryPovStyle, SPECIES_EMOJI, SPECIES_CN, TAG_PRESETS, POV_FALLBACK_TEXT } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 
@@ -129,14 +129,32 @@ export default function EditorPage() {
       ) {
         setSaveStage('thinking')
         const pool = petForPov.pov_styles
-        const chosenStyle = pool[Math.floor(Math.random() * pool.length)]
+
+        // 决定本次是抽单 style 还是融合：
+        // - URL 带 ?_fuse=1 → 强制融合（debug 用）
+        // - 否则 pool.length >= 2 时 20% 概率融合，制造"今天它情绪复杂"的偶发惊喜
+        const FUSION_PROBABILITY = 0.2
+        const forceFuse = searchParams.get('_fuse') === '1'
+        const canFuse = pool.length >= 2
+        const shouldFuse = forceFuse || (canFuse && Math.random() < FUSION_PROBABILITY)
+
+        let stylesToSend: PetPovStyle[]
+        let usedStyle: EntryPovStyle
+        if (shouldFuse) {
+          stylesToSend = pool
+          usedStyle = 'fused'
+        } else {
+          const chosenStyle = pool[Math.floor(Math.random() * pool.length)]
+          stylesToSend = [chosenStyle]
+          usedStyle = chosenStyle
+        }
+
         let povText: string | null = null
-        let usedStyle = chosenStyle
         try {
           const { data, error: invokeErr } = await supabase.functions.invoke('pet-pov', {
             body: {
               content: content.trim(),
-              style: chosenStyle,
+              styles: stylesToSend,
               pet_name: petForPov.name,
               pet_species: SPECIES_CN[petForPov.species],
             },

@@ -1,5 +1,9 @@
 // Pet POV Edge Function — DeepSeek proxy that rewrites a user diary entry from the pet's POV
 //
+// v2 changes (与 Pet POV v2 配套): 接受 styles[] 数组以支持多性格融合
+//   - body.style (string)        → 单 style，旧接口（向后兼容）
+//   - body.styles (string[])     → 1 个则等同 style；多个则触发"融合 prompt"模式
+//
 // Deployment: Supabase Dashboard → Edge Functions → New Function (name: pet-pov) → paste this file → Deploy
 // Required secret in Supabase: DEEPSEEK_API_KEY
 // Optional secret: DEEPSEEK_MODEL (default: deepseek-chat)
@@ -22,7 +26,15 @@ const STYLE_PROMPTS: Record<Style, string> = {
   cool: '克制简洁，话少。多用句号，几乎不用感叹号。看似不在乎其实很在意。',
 }
 
-function buildSystemPrompt(style: Style, petName: string, petSpecies: string) {
+const STYLE_LABEL: Record<Style, string> = {
+  silly: '傻乎乎',
+  literary: '文艺',
+  cute: '撒娇',
+  grumpy: '暴躁',
+  cool: '高冷',
+}
+
+function buildSingleSystemPrompt(style: Style, petName: string, petSpecies: string) {
   return `你是宠物日记翻译助手。主人会给你一段他写的关于宠物的日记，你需要把这段日记重写成宠物视角的版本。
 
 宠物基本信息：
@@ -38,6 +50,37 @@ function buildSystemPrompt(style: Style, petName: string, petSpecies: string) {
 6. 性格基调：${STYLE_PROMPTS[style]}
 
 请直接输出宠物日记内容，不要任何前言、解释、引号或标题。`
+}
+
+function buildFusedSystemPrompt(styles: Style[], petName: string, petSpecies: string) {
+  // 多性格融合：让 DeepSeek 把多个性格特征糅合在同一段话里，制造"今天它情绪复杂"的感觉
+  const styleList = styles
+    .map((s) => `  · ${STYLE_LABEL[s]}（${s}）：${STYLE_PROMPTS[s]}`)
+    .join('\n')
+
+  return `你是宠物日记翻译助手。主人会给你一段他写的关于宠物的日记，你需要把这段日记重写成宠物视角的版本。
+
+宠物基本信息：
+- 名字：${petName}
+- 物种：${petSpecies}
+
+要求：
+1. 用第一人称（"我"指宠物本身，主人用"主人"或"她/他"指代）
+2. 严禁使用"作为一只XX"、"我是一只XX"这类明显的 AI 套话
+3. 控制在 100-200 字之间
+4. 自然贴合宠物的本能反应（嗅觉、触感、玩耍冲动、对食物/温度/声音的敏感）
+5. 不要无中生有过多细节，基于主人原文展开就够，但允许补充一些宠物视角才会注意到的小观察
+
+性格基调（混合 —— 今天 ${petName} 的情绪比较复杂，请把下面这几种性格糅合在同一段话里，不要分段也不要刻意切换，让它们自然地叠在一起）：
+${styleList}
+
+请直接输出宠物日记内容，不要任何前言、解释、引号或标题。`
+}
+
+const ALL_STYLES: Style[] = ['silly', 'literary', 'cute', 'grumpy', 'cool']
+
+function isValidStyle(s: unknown): s is Style {
+  return typeof s === 'string' && (ALL_STYLES as string[]).includes(s)
 }
 
 serve(async (req) => {
@@ -56,6 +99,7 @@ serve(async (req) => {
   let body: {
     content?: string
     style?: Style
+    styles?: Style[]
     pet_name?: string
     pet_species?: string
   }
@@ -65,7 +109,7 @@ serve(async (req) => {
     return json({ error: 'Invalid JSON body' }, 400)
   }
 
-  const { content, style, pet_name = '它', pet_species = '宠物' } = body
+  const { content, style, styles, pet_name = '它', pet_species = '宠物' } = body
 
   if (typeof content !== 'string' || content.trim().length < 5) {
     return json({ error: '日记内容太短，至少写几句话再翻译吧' }, 400)
@@ -73,11 +117,25 @@ serve(async (req) => {
   if (content.length > 2000) {
     return json({ error: '日记内容过长（最多 2000 字）' }, 400)
   }
-  if (!style || !(style in STYLE_PROMPTS)) {
-    return json({ error: 'Invalid style' }, 400)
+
+  // 解析 styles：优先 styles[] 数组；否则 fallback 单 style
+  let resolvedStyles: Style[] = []
+  if (Array.isArray(styles) && styles.length > 0) {
+    resolvedStyles = styles.filter(isValidStyle)
+  } else if (style && isValidStyle(style)) {
+    resolvedStyles = [style]
+  }
+  if (resolvedStyles.length === 0) {
+    return json({ error: 'Invalid or missing style(s)' }, 400)
+  }
+  if (resolvedStyles.length > 3) {
+    resolvedStyles = resolvedStyles.slice(0, 3)
   }
 
-  const systemPrompt = buildSystemPrompt(style, pet_name, pet_species)
+  const fused = resolvedStyles.length > 1
+  const systemPrompt = fused
+    ? buildFusedSystemPrompt(resolvedStyles, pet_name, pet_species)
+    : buildSingleSystemPrompt(resolvedStyles[0], pet_name, pet_species)
 
   const ds = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
@@ -91,7 +149,8 @@ serve(async (req) => {
         { role: 'system', content: systemPrompt },
         { role: 'user', content },
       ],
-      temperature: 0.85,
+      // 融合模式 temperature 稍高，让 DeepSeek 更有发挥
+      temperature: fused ? 0.92 : 0.85,
       max_tokens: 400,
     }),
   })
@@ -109,7 +168,9 @@ serve(async (req) => {
 
   return json({
     pov_text: povText,
-    style,
+    style: fused ? 'fused' : resolvedStyles[0],
+    styles_used: resolvedStyles,
+    fused,
     model,
     usage: data.usage ?? null,
   })

@@ -7,6 +7,9 @@ const key = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 'sb_publishabl
 
 export const supabase = createClient(url, key)
 
+// entries.pet_pov_style 比 Pet.pov_styles 多一个 'fused' 值 —— 多性格融合时写入
+export type EntryPovStyle = PetPovStyle | 'fused'
+
 export type Entry = {
   id: string
   user_id: string
@@ -19,7 +22,7 @@ export type Entry = {
   photo_url: string | null
   tags: string[]
   pet_pov_text: string | null
-  pet_pov_style: PetPovStyle | null
+  pet_pov_style: EntryPovStyle | null
   pet_pov_generated_at: string | null
   created_at: string
   updated_at: string
@@ -72,9 +75,13 @@ export type Pet = {
 // POV fallback 文案（DeepSeek 失败时静默写入，统一撒娇语气）
 export const POV_FALLBACK_TEXT = '主人主人～我刚刚走神了一下下，等等再问我啦'
 
-export function getPovStyleMeta(style: PetPovStyle | null | undefined) {
+export function getPovStyleMeta(
+  style: EntryPovStyle | null | undefined
+): { emoji: string; label: string } | null {
   if (!style) return null
-  return PET_POV_STYLES.find((s) => s.id === style) ?? null
+  if (style === 'fused') return { emoji: '✨', label: '混合' }
+  const found = PET_POV_STYLES.find((s) => s.id === style)
+  return found ? { emoji: found.emoji, label: found.label } : null
 }
 
 export function isMemorial(pet: Pet | null | undefined): boolean {
