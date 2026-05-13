@@ -5,7 +5,6 @@ import {
   supabase,
   type Pet,
   type Entry,
-  SPECIES_EMOJI,
   SPECIES_LABEL,
   isMemorial,
   daysBetween,
@@ -190,7 +189,12 @@ function OpeningCard({
         </div>
         <div className="text-left">
           <p className="text-sm" style={{ color: 'var(--color-ink-soft)' }}>
-            {pet.breed ? `${SPECIES_EMOJI[pet.species]} ${pet.breed}` : SPECIES_LABEL[pet.species]}
+            {pet.breed ? (
+              <span className="inline-flex items-center gap-1 align-middle">
+                <SpeciesIcon species={pet.species} size={14} />
+                <span>{pet.breed}</span>
+              </span>
+            ) : SPECIES_LABEL[pet.species]}
           </p>
           {pet.birth_date && (
             <p className="text-xs mt-0.5" style={{ color: 'var(--color-ink-soft)' }}>

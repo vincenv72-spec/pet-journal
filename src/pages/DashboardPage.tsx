@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS, isMemorial } from '../lib/supabase'
+import { supabase, type Entry, type Pet, TAG_PRESETS, isMemorial } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 import ShareCard from '../components/ShareCard'
@@ -186,7 +186,10 @@ export default function DashboardPage() {
             const count = entries.filter((e) => e.pet_id === p.id).length
             return (
               <FilterPill key={p.id} active={filterPetId === p.id} onClick={() => setFilterPetId(p.id)} count={count}>
-                {SPECIES_EMOJI[p.species]} {p.name}
+                <span className="inline-flex items-center gap-1">
+                  <SpeciesIcon species={p.species} size={14} />
+                  {p.name}
+                </span>
               </FilterPill>
             )
           })}

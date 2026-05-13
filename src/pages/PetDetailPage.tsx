@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase, type Pet, type Entry, SPECIES_LABEL, SPECIES_EMOJI, isMemorial } from '../lib/supabase'
+import { supabase, type Pet, type Entry, SPECIES_LABEL, isMemorial } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 import InviteModal from '../components/InviteModal'
@@ -113,7 +113,12 @@ export default function PetDetailPage() {
               {memorial && <MemorialIcons />}
             </h1>
             <p style={{ color: 'var(--color-ink-soft)' }}>
-              {pet.breed ? <>{SPECIES_EMOJI[pet.species]} {pet.breed}</> : SPECIES_LABEL[pet.species]}
+              {pet.breed ? (
+                <span className="inline-flex items-center gap-1 align-middle">
+                  <SpeciesIcon species={pet.species} size={14} />
+                  <span>{pet.breed}</span>
+                </span>
+              ) : SPECIES_LABEL[pet.species]}
               {pet.birth_date && <span> · 生日 {pet.birth_date} · {ageString(pet.birth_date)}</span>}
             </p>
             {pet.note && <p className="mt-2 handwrite text-lg">"{pet.note}"</p>}

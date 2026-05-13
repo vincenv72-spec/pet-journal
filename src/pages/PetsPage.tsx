@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { supabase, type Pet, type Species, type PetPovStyle, SPECIES_LABEL, SPECIES_EMOJI, BREED_PRESETS, PET_POV_STYLES } from '../lib/supabase'
+import { supabase, type Pet, type Species, type PetPovStyle, SPECIES_LABEL, BREED_PRESETS, PET_POV_STYLES } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import PhotoBackground from '../components/PhotoBackground'
 import SpeciesIcon from '../components/SpeciesIcon'
@@ -206,7 +206,12 @@ function PetCard({ pet, index, onEdit, onDelete }: { pet: Pet; index: number; on
           <Link to={`/pets/${pet.id}`} className="block">
             <h3 className="text-2xl mb-0.5 truncate">{pet.name}</h3>
             <p className="text-sm truncate" style={{ color: 'var(--color-ink-soft)' }}>
-              {pet.breed ? <>{SPECIES_EMOJI[pet.species]} {pet.breed}</> : SPECIES_LABEL[pet.species]}
+              {pet.breed ? (
+                <span className="inline-flex items-center gap-1 align-middle">
+                  <SpeciesIcon species={pet.species} size={14} />
+                  <span>{pet.breed}</span>
+                </span>
+              ) : SPECIES_LABEL[pet.species]}
               {pet.birth_date && <span> · {age(pet.birth_date)}</span>}
             </p>
           </Link>
