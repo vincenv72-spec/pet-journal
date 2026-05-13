@@ -73,18 +73,9 @@ export default function PhotoBackground({ photo = 'hero', intensity = 1, memoria
         />
       )}
 
-      {/* Layer 5 — 滚动渐隐（memorial 时切到雾绿，呼应深绿色温） */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 -z-10 pointer-events-none"
-        style={{
-          height: '220vh',
-          background: memorial
-            ? 'linear-gradient(180deg, transparent 0%, transparent 70vh, rgba(232, 236, 228, 0.55) 130vh, rgba(232, 236, 228, 0.95) 220vh)'
-            : 'linear-gradient(180deg, transparent 0%, transparent 70vh, rgba(244, 240, 224, 0.50) 130vh, rgba(244, 240, 224, 0.92) 220vh)',
-          transition: 'background 0.8s ease-out',
-        }}
-      />
+      {/* Layer 5 滚动渐隐已移除 —— 之前的米色/雾绿渐变在长内容页面（如长卷）会造成
+         "上半厚雾、下半清晰"的割裂感。PhotoBackground 各层本身是 fixed 定位，
+         scroll 时背景永远跟着 viewport，不需要额外渐隐 */}
     </>
   )
 }

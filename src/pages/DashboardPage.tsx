@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase, type Entry, type Pet, SPECIES_EMOJI, TAG_PRESETS, isMemorial } from '../lib/supabase'
@@ -7,6 +7,7 @@ import PhotoBackground from '../components/PhotoBackground'
 import ShareCard from '../components/ShareCard'
 import ThemePicker from '../components/ThemePicker'
 import PovBubble from '../components/PovBubble'
+import MemorialAnniversaryCard, { getMemorialAnniversariesToShow } from '../components/MemorialAnniversaryCard'
 
 export default function DashboardPage() {
   const { session } = useAuth()
@@ -17,6 +18,8 @@ export default function DashboardPage() {
   const [filterPetId, setFilterPetId] = useState<string | null>(null)
   const [filterTag, setFilterTag] = useState<string | null>(null)
   const [sharingEntry, setSharingEntry] = useState<Entry | null>(null)
+  const [anniversaries, setAnniversaries] = useState<{ pet: Pet; yearsSince: number }[]>([])
+  const anniversariesComputedRef = useRef(false)
 
   useEffect(() => {
     if (!session) return
@@ -29,6 +32,13 @@ export default function DashboardPage() {
       setLoading(false)
     })
   }, [session])
+
+  // 计算今天要显示的 memorial 周年卡片（仅 pets 加载后算一次，避免 strict mode 双调）
+  useEffect(() => {
+    if (anniversariesComputedRef.current || pets.length === 0) return
+    anniversariesComputedRef.current = true
+    setAnniversaries(getMemorialAnniversariesToShow(pets))
+  }, [pets])
 
   const filtered = useMemo(() => {
     let list = entries
@@ -89,6 +99,20 @@ export default function DashboardPage() {
         </div>
         <Link to="/editor/new" className="btn-primary">＋ 写新一篇</Link>
       </div>
+
+      {/* 周年纪念卡片（仅 memorial 宠物离开周年当天 + 当天前 2 次访问） */}
+      {anniversaries.length > 0 && !loading && (
+        <AnimatePresence>
+          {anniversaries.map(({ pet, yearsSince }) => (
+            <MemorialAnniversaryCard
+              key={pet.id}
+              pet={pet}
+              yearsSince={yearsSince}
+              onClose={() => setAnniversaries((prev) => prev.filter((a) => a.pet.id !== pet.id))}
+            />
+          ))}
+        </AnimatePresence>
+      )}
 
       {/* 永久长卷入口：横向卡片，每只宠物一张 */}
       {pets.length > 0 && !loading && (
