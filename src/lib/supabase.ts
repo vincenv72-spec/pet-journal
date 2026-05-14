@@ -75,8 +75,60 @@ export type Pet = {
   passed_away_at: string | null
   memorial_note: string | null
   pov_styles: PetPovStyle[] | null
+  public_companion: boolean
   created_at: string
   updated_at: string
+}
+
+// Companion Wall — anonymous public-facing pet directory (no PII exposed)
+export type CompanionWallEntry = {
+  id: string
+  name: string
+  species: Species
+  breed: string | null
+  avatar_url: string | null
+  has_passed_away: boolean
+  passed_year: number | null
+  entries_count: number
+}
+
+export async function fetchCompanionWall(): Promise<CompanionWallEntry[]> {
+  const { data, error } = await supabase.rpc('get_companion_wall')
+  if (error) throw error
+  return (data ?? []) as CompanionWallEntry[]
+}
+
+// Companion Wall detail (F3): per-pet entries excerpt (no PII, no specific dates)
+export type CompanionEntryExcerpt = {
+  id: string
+  title: string
+  content_excerpt: string
+  has_more: boolean
+  year: number
+  mood: string | null
+  photo_url: string | null
+  pet_pov_text: string | null
+  pet_pov_style: EntryPovStyle | null
+}
+
+export type CompanionPetDetail = {
+  id: string
+  name: string
+  species: Species
+  breed: string | null
+  avatar_url: string | null
+  has_passed_away: boolean
+  passed_year: number | null
+  memorial_note: string | null
+  birth_year: number | null
+  entries: CompanionEntryExcerpt[]
+}
+
+export async function fetchCompanionPetDetail(petId: string): Promise<CompanionPetDetail | null> {
+  const { data, error } = await supabase.rpc('get_companion_pet_detail', { target_pet_id: petId })
+  if (error) throw error
+  const rows = (data ?? []) as CompanionPetDetail[]
+  return rows[0] ?? null
 }
 
 // POV fallback 文案（DeepSeek 失败时静默写入，统一撒娇语气）

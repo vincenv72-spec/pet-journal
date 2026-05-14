@@ -162,6 +162,33 @@ export default function PetDetailPage() {
           )}
         </AnimatePresence>
 
+        {/* 同伴墙参与（匿名展示） */}
+        <div
+          className="mt-6 mb-3 flex items-center justify-end gap-2 text-xs"
+          style={{ color: 'var(--color-ink-soft)' }}
+        >
+          <input
+            id={`companion-toggle-${pet.id}`}
+            type="checkbox"
+            checked={pet.public_companion}
+            onChange={async (e) => {
+              const newVal = e.target.checked
+              const { error } = await supabase
+                .from('pets')
+                .update({ public_companion: newVal })
+                .eq('id', pet.id)
+              if (!error) {
+                setPet((prev) => (prev ? { ...prev, public_companion: newVal } : prev))
+              }
+            }}
+            className="w-3.5 h-3.5 cursor-pointer"
+            style={{ accentColor: 'var(--color-forest)' }}
+          />
+          <label htmlFor={`companion-toggle-${pet.id}`} className="cursor-pointer">
+            在同伴墙匿名展示
+          </label>
+        </div>
+
         {/* 最后篇章 —— 平时折叠，点开才出现标记/撤销流程 */}
         <MemorialMark
           pet={pet}

@@ -241,6 +241,7 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
   const [note, setNote] = useState(pet?.note ?? '')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(pet?.avatar_url ?? null)
   const [povStyles, setPovStyles] = useState<PetPovStyle[]>(pet?.pov_styles ?? [])
+  const [publicCompanion, setPublicCompanion] = useState<boolean>(pet?.public_companion ?? true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -292,6 +293,7 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
         note: note.trim() || null,
         avatar_url: avatarUrl,
         pov_styles: povStyles,
+        public_companion: publicCompanion,
       }
       if (pet) {
         const { error } = await supabase.from('pets').update(payload).eq('id', pet.id)
@@ -473,6 +475,24 @@ function PetFormModal({ pet, ownerId, onClose, onSaved }: { pet: Pet | null; own
                 已选 {povStyles.length}/3 · 每篇手帐会随机抽一种语气
               </p>
             )}
+          </div>
+
+          {/* 同伴墙参与（匿名）*/}
+          <div className="pt-2 flex items-start gap-3">
+            <input
+              id="public-companion-toggle"
+              type="checkbox"
+              checked={publicCompanion}
+              onChange={(e) => setPublicCompanion(e.target.checked)}
+              className="mt-1 w-4 h-4 shrink-0"
+              style={{ accentColor: 'var(--color-forest)' }}
+            />
+            <label htmlFor="public-companion-toggle" className="cursor-pointer">
+              <span className="text-sm block">把 {name.trim() || '它'} 加入同伴墙</span>
+              <span className="text-xs" style={{ color: 'var(--color-ink-soft)' }}>
+                匿名展示头像 / 名字 / 物种 / 手帐篇数 · 不暴露任何身份信息
+              </span>
+            </label>
           </div>
 
           {error && <p className="text-sm" style={{ color: 'var(--color-rose)' }}>{error}</p>}

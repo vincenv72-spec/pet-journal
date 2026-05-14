@@ -176,6 +176,43 @@ export default function DashboardPage() {
         </section>
       )}
 
+      {/* 同伴墙入口 */}
+      {!loading && (
+        <section className="mb-6 relative z-10">
+          <p className="text-xs mb-2.5 tracking-wide" style={{ color: 'var(--color-ink-soft)' }}>
+            ✿ 同伴墙
+          </p>
+          <Link
+            to="/companions"
+            className="rounded-2xl px-5 py-4 flex items-center gap-4 transition hover:-translate-y-0.5 group"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,232,200,0.55), rgba(232,240,228,0.55))',
+              border: '1px solid rgba(122, 106, 92, 0.18)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(255, 252, 243, 0.55)', color: 'var(--color-forest-deep)' }}
+            >
+              <SpeciesIcon species="other" size={28} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold">同伴墙 — 看看其他毛孩子</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--color-ink-soft)' }}>
+                你不孤单，还有很多人在记录他们的毛孩子
+                <span
+                  className="group-hover:translate-x-0.5 transition-transform inline-block ml-1"
+                  style={{ color: 'var(--color-forest)' }}
+                >
+                  →
+                </span>
+              </p>
+            </div>
+          </Link>
+        </section>
+      )}
+
       {/* 宠物筛选 Tab 条 */}
       {pets.length > 0 && !loading && (
         <div className="flex flex-wrap gap-2 mb-3 relative z-10">
