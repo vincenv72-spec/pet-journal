@@ -26,7 +26,7 @@ export default function HomePage() {
       </nav>
 
       {/* Hero —— 文字居左，右侧让插画呼吸 */}
-      <section className="px-6 md:px-20 pt-12 md:pt-24 pb-44 md:pb-56 relative z-10">
+      <section className="px-6 md:px-20 pt-12 md:pt-24 pb-40 md:pb-64 relative z-10">
         <div className="max-w-xl">
           <motion.p
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -62,56 +62,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 三个功能 —— 卡片向上叠在 Hero 之下 */}
-      <section className="px-6 md:px-20 -mt-32 md:-mt-40 pb-24 relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl mb-3">三件事，慢慢做就好</h2>
-          <p className="text-base" style={{ color: 'var(--color-ink-soft)' }}>不需要会画画，也能拥有最可爱的手帐本</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.10 }}
-              className="card-paper hover:-translate-y-1 transition-transform duration-300"
-            >
-              <div className="text-3xl mb-3">{f.icon}</div>
-              <h3 className="text-2xl mb-2">{f.title}</h3>
-              <p style={{ color: 'var(--color-ink-soft)' }}>{f.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-6 md:px-20 py-12 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="card-paper max-w-2xl mx-auto text-center !py-14 !px-10"
-        >
-          <p className="text-sm mb-3" style={{ color: 'var(--color-forest)' }}>— 一段温柔的开始 —</p>
-          <h2 className="text-4xl md:text-5xl mb-4 leading-tight">开始你和它的<br />第一页</h2>
-          <p className="mb-8" style={{ color: 'var(--color-ink-soft)' }}>注册即送 50 张限定贴纸 · 永久免费基础版</p>
-          <Link to={session ? '/dashboard' : '/login'} className="btn-primary text-base">
-            {session ? '回到手帐本 →' : '立刻领取 →'}
-          </Link>
-          <p className="mt-6 tracking-[0.4em] opacity-40 text-sm">🐾 🐾 🐾 🐾 🐾</p>
-        </motion.div>
-      </section>
-
       <footer className="text-center py-8 text-sm relative z-10" style={{ color: 'var(--color-ink-soft)' }}>
         © 2026 宠物手帐 · made with <span style={{ color: 'var(--color-rose)' }}>♡</span> for every furry friend
       </footer>
     </div>
   )
 }
-
-const features = [
-  { icon: '📸', title: '拍下来', desc: '导入相册，自动按宠物分册整理。' },
-  { icon: '✍️', title: '写下来', desc: '心情 emoji + 手写质感字体，三行也能成手帐。' },
-  { icon: '📖', title: '留下来', desc: '每年生成回忆相册，可印成实体书。' },
-]
 
 function PawLogo() {
   return (
